@@ -1,0 +1,148 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Exception">
+      <UniqueIdentifier>{99cc79a8-93c3-495d-baae-3e2a49986963}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Image">
+      <UniqueIdentifier>{26a17675-a8e2-4960-8f91-73aeadc9c5b8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tool">
+      <UniqueIdentifier>{3436fc41-5aef-4b1f-b8d6-ecddae268b30}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Communication">
+      <UniqueIdentifier>{a576a662-bdfb-46d4-90ef-156d6b44ff8d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility">
+      <UniqueIdentifier>{fef7b5c3-3e78-42d6-8400-15df0e088d1a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Logging">
+      <UniqueIdentifier>{92fe8269-d3ce-44f5-a393-261f8e27de7c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Version">
+      <UniqueIdentifier>{79a36cfe-9fb9-40f9-b034-c2d090c35e27}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Singleton">
+      <UniqueIdentifier>{d55d4f1a-c863-4e6e-9f9b-8f630caa648d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dll">
+      <UniqueIdentifier>{29908bf5-820e-4171-93bc-3d9438414f7c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Iterator">
+      <UniqueIdentifier>{e53ec238-23ca-43bb-91cc-c0c579a99105}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Timeout">
+      <UniqueIdentifier>{9c163481-14a4-4746-b476-b920d6d9ae83}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Variant">
+      <UniqueIdentifier>{53283cb7-9deb-4f5b-9248-78e34ca92042}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Transfer">
+      <UniqueIdentifier>{a2bd6504-9efa-4876-9d91-1b1fd025de9b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Grabber">
+      <UniqueIdentifier>{44341fd6-4247-415f-8989-ae32a38908a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Io">
+      <UniqueIdentifier>{1c54a522-5af8-49ea-865b-c978b57df6e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Axis">
+      <UniqueIdentifier>{6b5ae0d3-ac6d-4743-9737-b1a0aa6a76a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Signal">
+      <UniqueIdentifier>{a37e2e68-16c1-45c0-b7ac-5815b9bbc6ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Plc">
+      <UniqueIdentifier>{6581a250-2992-47c2-8973-efcdd9ec2612}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archive">
+      <UniqueIdentifier>{49d10c75-84db-4ee7-afa9-95db9723fb65}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Exception\Basis.h">
+      <Filter>Exception</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Image\Basis.h">
+      <Filter>Image</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Tool\Text.h">
+      <Filter>Tool</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Communication\Udp.h">
+      <Filter>Communication</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Logging\Basis.h">
+      <Filter>Logging</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Utility\SequentialAsync.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Exception\Code.h">
+      <Filter>Exception</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Version\Basis.h">
+      <Filter>Version</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Version\Manager.h">
+      <Filter>Version</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Tool\Exception.h">
+      <Filter>Tool</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Tool\Logging.h">
+      <Filter>Tool</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Utility\StopWatch.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Dll\Basis.h">
+      <Filter>Dll</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Iterator\Basis.h">
+      <Filter>Iterator</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Timeout\Basis.h">
+      <Filter>Timeout</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Variant\Basis.h">
+      <Filter>Variant</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Transfer\Setting.h">
+      <Filter>Transfer</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Grabber\Condition.h">
+      <Filter>Grabber</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Grabber\Setting.h">
+      <Filter>Grabber</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Io\Setting.h">
+      <Filter>Io</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Axis\Setting.h">
+      <Filter>Axis</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Signal\Define.h">
+      <Filter>Signal</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Io\Status.h">
+      <Filter>Io</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Plc\Setting.h">
+      <Filter>Plc</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Archive\Convert.h">
+      <Filter>Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Tool\Variant.h">
+      <Filter>Tool</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Axis\Status.h">
+      <Filter>Axis</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Singleton\Worker.h">
+      <Filter>Singleton</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

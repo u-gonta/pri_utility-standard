@@ -1,0 +1,45 @@
+﻿//{{NO_DEPENDENCIES}}
+// Microsoft Visual C++ で生成されたインクルード ファイル。
+// SampleMfc.rc で使用
+//
+#define IDM_ABOUTBOX                    0x0010
+#define IDD_ABOUTBOX                    100
+#define IDS_ABOUTBOX                    101
+#define IDD_SampleMfc_DIALOG            102
+#define IDR_MAINFRAME                   128
+#define IDC_BUTTON_WRITE_ANALOG_GAIN    1000
+#define IDC_BUTTON_WRITE_DIGITAL_GAIN   1001
+#define IDC_EDIT_ANALOG_GAIN            1002
+#define IDC_BUTTON_WRITE_EXPOSURE_TIME  1003
+#define IDC_EDIT_DIGITAL_GAIN           1004
+#define IDC_EDIT_EXPOSURE_TIME          1005
+#define IDC_BUTTON_CAPTURE              1006
+#define IDC_BUTTON_IO_READ_BIT          1007
+#define IDC_EDIT_IO_INPUT_INDEX_BIT     1008
+#define IDC_EDIT_IO_OUTPUT_INDEX_BIT    1009
+#define IDC_BUTTON_IO_WRITE_BIT         1010
+#define IDC_CHECK_IO_INPUT_BIT          1011
+#define IDC_CHECK_IO_OUTPUT_BIT         1012
+#define IDC_EDIT_IO_INPUT_INT_MIDDLE    1013
+#define IDC_EDIT_IO_OUTPUT_INT_MIDDLE   1014
+#define IDC_BUTTON_IO_READ_PENDING      1015
+#define IDC_CHECK_IO_INPUT_TRIGGER      1016
+#define IDC_BUTTON_IO_WRITE_INT_MIDDLE  1017
+#define IDC_EDIT_IO_OUTPUT_INDEX_INT_MIDDLE 1018
+#define IDC_BUTTON_IO_READ_INT_MIDDLE   1019
+#define IDC_EDIT_IO_INPUT_CATEGORY_BIT  1020
+#define IDC_EDIT_IO_INPUT_INDEX_INT_MIDDLE 1021
+#define IDC_EDIT_IO_OUTPUT_CATEGORY_BIT 1022
+#define IDC_EDIT_IO_OUTPUT_CATEGORY_INT_MIDDLE 1023
+#define IDC_EDIT_IO_INPUT_CATEGORY_INT_MIDDLE 1024
+
+// Next default values for new objects
+// 
+#ifdef APSTUDIO_INVOKED
+#ifndef APSTUDIO_READONLY_SYMBOLS
+#define _APS_NEXT_RESOURCE_VALUE        130
+#define _APS_NEXT_COMMAND_VALUE         32771
+#define _APS_NEXT_CONTROL_VALUE         1012
+#define _APS_NEXT_SYMED_VALUE           101
+#endif
+#endif

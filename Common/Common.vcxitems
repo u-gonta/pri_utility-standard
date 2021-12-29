@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{a8469fd8-f218-4e97-a9b1-20acbd7f2e21}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Archive\Convert.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Axis\Setting.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Axis\Status.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Communication\Udp.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Dll\Basis.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Exception\Basis.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Exception\Code.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Grabber\Condition.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Grabber\Setting.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Image\Basis.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Io\Setting.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Io\Status.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Iterator\Basis.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Logging\Basis.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Plc\Setting.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Signal\Define.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Singleton\Worker.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Timeout\Basis.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Tool\Exception.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Tool\Logging.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Tool\Text.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Tool\Variant.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Transfer\Setting.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Utility\SequentialAsync.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Utility\StopWatch.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Variant\Basis.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Version\Basis.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Version\Manager.h" />
+  </ItemGroup>
+</Project>
