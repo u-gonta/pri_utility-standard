@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\opencv_450.4.5.0.202107263\build\native\opencv_450.props" Condition="Exists('..\packages\opencv_450.4.5.0.202107263\build\native\opencv_450.props')" />
   <Import Project="..\packages\Microsoft.ML.OnnxRuntime.1.9.0\build\native\Microsoft.ML.OnnxRuntime.props" Condition="Exists('..\packages\Microsoft.ML.OnnxRuntime.1.9.0\build\native\Microsoft.ML.OnnxRuntime.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
@@ -64,13 +65,13 @@
       <PreprocessorDefinitions>_DEBUG;ONNX_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\;..\Common\OpenCV\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>..\Output\$(Configuration)\$(Platform)\Transfer;..\Common\OpenCV\lib\$(Configuration)\$(Platform);..\packages\Microsoft.ML.OnnxRuntime.1.9.0\runtimes\win-x64\native</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\Output\$(Configuration)\$(Platform)\Transfer</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -83,7 +84,7 @@
       <PreprocessorDefinitions>NDEBUG;ONNX_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\;..\Common\OpenCV\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -91,7 +92,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>..\Output\$(Configuration)\$(Platform)\Transfer;..\Common\OpenCV\lib\$(Configuration)\$(Platform);..\packages\Microsoft.ML.OnnxRuntime.1.9.0\runtimes\win-x64\native</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\Output\$(Configuration)\$(Platform)\Transfer</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -116,6 +117,7 @@
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\Microsoft.ML.OnnxRuntime.1.9.0\build\native\Microsoft.ML.OnnxRuntime.targets" Condition="Exists('..\packages\Microsoft.ML.OnnxRuntime.1.9.0\build\native\Microsoft.ML.OnnxRuntime.targets')" />
     <Import Project="..\packages\boost.1.78.0\build\boost.targets" Condition="Exists('..\packages\boost.1.78.0\build\boost.targets')" />
+    <Import Project="..\packages\opencv_450.4.5.0.202107263\build\native\opencv_450.targets" Condition="Exists('..\packages\opencv_450.4.5.0.202107263\build\native\opencv_450.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -124,5 +126,7 @@
     <Error Condition="!Exists('..\packages\Microsoft.ML.OnnxRuntime.1.9.0\build\native\Microsoft.ML.OnnxRuntime.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.ML.OnnxRuntime.1.9.0\build\native\Microsoft.ML.OnnxRuntime.props'))" />
     <Error Condition="!Exists('..\packages\Microsoft.ML.OnnxRuntime.1.9.0\build\native\Microsoft.ML.OnnxRuntime.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.ML.OnnxRuntime.1.9.0\build\native\Microsoft.ML.OnnxRuntime.targets'))" />
     <Error Condition="!Exists('..\packages\boost.1.78.0\build\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost.1.78.0\build\boost.targets'))" />
+    <Error Condition="!Exists('..\packages\opencv_450.4.5.0.202107263\build\native\opencv_450.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\opencv_450.4.5.0.202107263\build\native\opencv_450.props'))" />
+    <Error Condition="!Exists('..\packages\opencv_450.4.5.0.202107263\build\native\opencv_450.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\opencv_450.4.5.0.202107263\build\native\opencv_450.targets'))" />
   </Target>
 </Project>
