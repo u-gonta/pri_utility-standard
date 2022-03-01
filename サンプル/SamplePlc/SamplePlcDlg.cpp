@@ -506,9 +506,9 @@ void CSamplePlcDlg::OnPaint()
 			color = RGB(0, 255, 0);
 			for (const auto& driver : m_inputAxis.Drivers)
 			{
-				if (driver.second.Running.count(MotionApi::Status::RunningServo))
+				if (driver.second.Motion.count(Axis::Status::Input::MotionServo))
 				{
-					if (driver.second.Running.at(MotionApi::Status::RunningServo) == false)
+					if (driver.second.Motion.at(Axis::Status::Input::MotionServo) == false)
 					{
 						color = offColor;
 					}
@@ -520,9 +520,9 @@ void CSamplePlcDlg::OnPaint()
 			color = RGB(0, 255, 0);
 			for (const auto& driver : m_inputAxis.Drivers)
 			{
-				if (driver.second.Position.count(MotionApi::Status::PositionOriginCompleted))
+				if (driver.second.Motion.count(Axis::Status::Input::MotionOrigin))
 				{
-					if (driver.second.Position.at(MotionApi::Status::PositionOriginCompleted) == false)
+					if (driver.second.Motion.at(Axis::Status::Input::MotionOrigin) == false)
 					{
 						color = offColor;
 					}
@@ -644,33 +644,46 @@ void CSamplePlcDlg::OnLButtonDown(UINT nFlags, CPoint point)
 		}
 
 		Axis::Status::Output::CStartJog status;
+		bool valid = false;
 
 		for (const auto& axis : m_jogAxis)
 		{
-			status.Drivers[axis.first] = m_driverAxises[axis.first];
+			status.Drivers[axis.first];
 
-			MotionApi::Device::Setting::Motion::Jog::CStart setting;
+			MotionApi::Device::Setting::Jog::CStart setting;
+
 			//setting.Coordinate = MotionApi::Device::CoodinateMachine;
 			//setting.MoveType = MotionApi::Device::MoveAbsolute;
 			//setting.VelocityType = MotionApi::Device::VelocityUnit;
 			//setting.AccDecType = MotionApi::Device::AccDecKeep;
 			//setting.FilterType = MotionApi::Device::FilterKeep;
 
-			//setting.Values[MotionApi::Device::ValueMaxVelocity] = 100;
-			//setting.Values[MotionApi::Device::ValueAcceleration] = 10;
-			//setting.Values[MotionApi::Device::ValueDeceleration] = 10;
-			//setting.Values[MotionApi::Device::ValueFilterTime] = 10;
-			setting.Datas[MotionApi::Device::DataVelocity] = 10000;
-			//setting.Values[MotionApi::Device::ValueApproachVelocity] = 10;
-			//setting.Values[MotionApi::Device::ValueCreepVelocity] = 10;
+			//setting.MaxVelocity.Indirect = false;
+			//setting.MaxVelocity.Value = 3000;
+			//setting.Acceleration.Indirect = false;
+			//setting.Acceleration.Value = 100;
+			//setting.Deceleration.Indirect = false;
+			//setting.Deceleration.Value = 100;
+			//setting.FilterTime.Indirect = false;
+			//setting.FilterTime.Value = 100;
+			//setting.Velocity.Indirect = false;
+			//setting.Velocity.Value = 3000;
+			//setting.ApproachVelocity.Indirect = false;
+			//setting.ApproachVelocity.Value = 1000;
+			//setting.CreepVelocity.Indirect = false;
+			//setting.CreepVelocity.Value = 500;
 
 			setting.Direction = axis.second;
-			setting.Timeout = 1;
-			status.Other.Objects.emplace_back(Variant::CObject(Plc::ParameterStartJog, setting));
+			setting.Timeout = 100;
+			status.Drivers[axis.first].Other.Objects.emplace_back(Variant::CObject(Plc::ParameterStartJog, setting));
+			valid = true;
 		}
 
-		// ジョグを実行
-		Axis::StartJog(status);
+		if (valid)
+		{
+			// ジョグを開始
+			Axis::StartJog(status);
+		}
 #endif
 		Transfer::Output(logging);
 	}
@@ -730,11 +743,12 @@ void CSamplePlcDlg::OnLButtonUp(UINT nFlags, CPoint point)
 
 			for (const auto& axis : m_jogAxis)
 			{
-				status.Drivers[axis.first] = m_driverAxises[axis.first];
+				status.Drivers[axis.first];
 
-				MotionApi::Device::Setting::Motion::Jog::CStop setting;
-				setting.Completed = MotionApi::Device::CompletePositioning;
-				status.Other.Objects.emplace_back(Variant::CObject(Plc::ParameterStopJog, setting));
+				MotionApi::Device::Setting::Jog::CStop setting;
+
+				setting.Complete = MotionApi::Device::CompletePositioning;
+				status.Drivers[axis.first].Other.Objects.emplace_back(Variant::CObject(Plc::ParameterStopJog, setting));
 			}
 
 			// ジョグを停止
@@ -775,44 +789,42 @@ void CSamplePlcDlg::OnMouseMove(UINT nFlags, CPoint point)
 				{
 				case JogIoNegativeX:
 					// -ジョグ移動X軸
-					if (IsJogNegativeX(point) == false)
+					if (IsJogNegativeX(point))
 					{
-						iterator->Value = false;
-						change = true;
-						logging.Message << Logging::ConstSeparator << "-X" << Logging::ConstSeparator << Variant::FormatValue(iterator->Value);
+						continue;
 					}
+					logging.Message << Logging::ConstSeparator << "-X" << Logging::ConstSeparator << Variant::FormatValue(iterator->Value);
 					break;
 
 				case JogIoPositiveX:
 					// +ジョグ移動X軸
-					if (IsJogPositiveX(point) == false)
+					if (IsJogPositiveX(point))
 					{
-						iterator->Value = false;
-						change = true;
-						logging.Message << Logging::ConstSeparator << "+X" << Logging::ConstSeparator << Variant::FormatValue(iterator->Value);
+						continue;
 					}
+					logging.Message << Logging::ConstSeparator << "+X" << Logging::ConstSeparator << Variant::FormatValue(iterator->Value);
 					break;
 
 				case JogIoNegativeY:
 					// -ジョグ移動Y軸
-					if (IsJogNegativeY(point) == false)
+					if (IsJogNegativeY(point))
 					{
-						iterator->Value = false;
-						change = true;
-						logging.Message << Logging::ConstSeparator << "-Y" << Logging::ConstSeparator << Variant::FormatValue(iterator->Value);
+						continue;
 					}
+					logging.Message << Logging::ConstSeparator << "-Y" << Logging::ConstSeparator << Variant::FormatValue(iterator->Value);
 					break;
 
 				case JogIoPositiveY:
 					// +ジョグ移動Y軸
-					if (IsJogPositiveY(point) == false)
+					if (IsJogPositiveY(point))
 					{
-						iterator->Value = false;
-						change = true;
-						logging.Message << Logging::ConstSeparator << "+Y" << Logging::ConstSeparator << Variant::FormatValue(iterator->Value);
+						continue;
 					}
+					logging.Message << Logging::ConstSeparator << "+Y" << Logging::ConstSeparator << Variant::FormatValue(iterator->Value);
 					break;
 				}
+				iterator->Value = false;
+				change = true;
 			}
 		}
 
@@ -836,22 +848,20 @@ void CSamplePlcDlg::OnMouseMove(UINT nFlags, CPoint point)
 					{
 					case MotionApi::Device::DirectionNegative:
 						// -ジョグ移動X軸
-						if (IsJogNegativeX(point) == false)
+						if (IsJogNegativeX(point))
 						{
-							status.Drivers[axis.first] = m_driverAxises[axis.first];
-							change = true;
-							logging.Message << Logging::ConstSeparator << "-X";
+							continue;
 						}
+						logging.Message << Logging::ConstSeparator << "-X";
 						break;
 
 					case MotionApi::Device::DirectionPositive:
 						// +ジョグ移動X軸
-						if (IsJogPositiveX(point) == false)
+						if (IsJogPositiveX(point))
 						{
-							status.Drivers[axis.first] = m_driverAxises[axis.first];
-							change = true;
-							logging.Message << Logging::ConstSeparator << "+X";
+							continue;
 						}
+						logging.Message << Logging::ConstSeparator << "+X";
 						break;
 					}
 					break;
@@ -861,30 +871,30 @@ void CSamplePlcDlg::OnMouseMove(UINT nFlags, CPoint point)
 					{
 					case MotionApi::Device::DirectionNegative:
 						// -ジョグ移動Y軸
-						if (IsJogNegativeY(point) == false)
+						if (IsJogNegativeY(point))
 						{
-							status.Drivers[axis.first] = m_driverAxises[axis.first];
-							change = true;
-							logging.Message << Logging::ConstSeparator << "-Y";
+							continue;
 						}
+						logging.Message << Logging::ConstSeparator << "-Y";
 						break;
 
 					case MotionApi::Device::DirectionPositive:
 						// +ジョグ移動Y軸
-						if (IsJogPositiveY(point) == false)
+						if (IsJogPositiveY(point))
 						{
-							status.Drivers[axis.first] = m_driverAxises[axis.first];
-							change = true;
-							logging.Message << Logging::ConstSeparator << "+X";
+							continue;
 						}
+						logging.Message << Logging::ConstSeparator << "+X";
 						break;
 					}
 					break;
 				}
 
-				MotionApi::Device::Setting::Motion::Jog::CStop setting;
-				setting.Completed = MotionApi::Device::CompletePositioning;
-				status.Other.Objects.emplace_back(Variant::CObject(Plc::ParameterStopJog, setting));
+				status.Drivers[axis.first] = m_driverAxises[axis.first];
+				MotionApi::Device::Setting::Jog::CStop setting;
+				setting.Complete = MotionApi::Device::CompletePositioning;
+				status.Drivers[axis.first].Other.Objects.emplace_back(Variant::CObject(Plc::ParameterStopJog, setting));
+				change = true;
 			}
 
 			if (change)
@@ -943,7 +953,48 @@ void CSamplePlcDlg::OnBnClickedButtonOrigin()
 #ifdef IoUse
 		HandShake(11);
 #else
+		Axis::Status::Output::CMoveOrigin status;
 
+		for (const auto& driver : m_driverAxises)
+		{
+			status.Drivers[driver.first];
+
+			MotionApi::Device::Setting::Origin::CAxis setting;
+
+			//setting.Coordinate = MotionApi::Device::CoodinateMachine;
+			//setting.MoveType = MotionApi::Device::MoveAbsolute;
+			//setting.VelocityType = MotionApi::Device::VelocityUnit;
+			//setting.AccDecType = MotionApi::Device::AccDecKeep;
+			//setting.FilterType = MotionApi::Device::FilterKeep;
+
+			//setting.MaxVelocity.Indirect = false;
+			//setting.MaxVelocity.Value = 3000;
+			//setting.Acceleration.Indirect = false;
+			//setting.Acceleration.Value = 100;
+			setting.Deceleration.Indirect = false;
+			setting.Deceleration.Value = 100;
+			setting.FilterTime.Indirect = false;
+			setting.FilterTime.Value = 100;
+			setting.Velocity.Indirect = false;
+			setting.Velocity.Value = 3000;
+			setting.ApproachVelocity.Indirect = false;
+			setting.ApproachVelocity.Value = 1000;
+			setting.CreepVelocity.Indirect = false;
+			setting.CreepVelocity.Value = 500;
+
+			setting.PositionType = MotionApi::Device::PositionImmediate;
+			setting.PositionData = 0;
+
+			setting.Method = MotionApi::Device::OriginC;
+			//setting.Direction = MotionApi::Device::DirectionNegative;
+			//setting.Complete = MotionApi::Device::CompleteStart;
+
+			status.Drivers[driver.first].Other.Objects.emplace_back(Variant::CObject(Plc::ParameterOriginAxis, setting));
+		}
+		status.Other.Objects.emplace_back(Variant::CObject(Plc::ParameterMoveOriginTimeout, 10000));
+
+		// 原点復帰を実行
+		Axis::MoveOrigin(status);
 #endif
 	}
 	catch (const std::exception& e)
@@ -1411,6 +1462,8 @@ void CSamplePlcDlg::DrawCurrent(int id)
 		wnd->GetClientRect(&control);
 
 		CRect area;
+
+#ifdef IoUse
 		Io::Specify::CAddress address;
 
 		address.Category = Plc::Register::ConstCategoryM;
@@ -1468,7 +1521,34 @@ void CSamplePlcDlg::DrawCurrent(int id)
 		originX -= area.left;
 		originY = 0;// (float)control.Height() - (float)area.top * ratioY;
 		originY -= area.top;
+#else
+		// -リミットX軸
+		area.left = m_inputAxis.Drivers.at(AxisX).Coordinate.at(Axis::Status::Input::CoordinateNegativeLimit);
+		// +リミットX軸
+		area.right = m_inputAxis.Drivers.at(AxisX).Coordinate.at(Axis::Status::Input::CoordinatePositiveLimit);
+		// -リミットY軸
+		area.top = m_inputAxis.Drivers.at(AxisY).Coordinate.at(Axis::Status::Input::CoordinateNegativeLimit);
+		// +リミットY軸
+		area.bottom = m_inputAxis.Drivers.at(AxisY).Coordinate.at(Axis::Status::Input::CoordinatePositiveLimit);
 
+		float ratioX = (float)control.Width() / (float)area.Width();
+		float ratioY = (float)control.Height() / (float)area.Height();
+
+		// 現在のX軸
+		long currentX = m_inputAxis.Drivers.at(AxisX).Coordinate.at(Axis::Status::Input::CoordinateCurrent);
+
+		// 現在のY軸
+		long currentY = m_inputAxis.Drivers.at(AxisY).Coordinate.at(Axis::Status::Input::CoordinateCurrent);
+
+		float originX;
+		float originY;
+
+		// 原点を算出
+		originX = 0;// (float)area.left * ratioX;
+		originX -= area.left;
+		originY = 0;// (float)control.Height() - (float)area.top * ratioY;
+		originY -= area.top;
+#endif
 		// 原点を描画
 		dc.SelectObject(brushOrigin);
 		dc.MoveTo((int)(originX * ratioX), 0);

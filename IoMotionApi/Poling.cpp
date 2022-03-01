@@ -3,7 +3,8 @@
 #include "Common/Io/Setting.h"
 
 #include "PlcMotionApi/Parameter.h"
-#include "PlcMotionApi/Controller.h"
+#include "PlcMotionApi/ExecutionController.h"
+#include "PlcMotionApi/ExecutionRegister.h"
 
 namespace Standard
 {
@@ -129,8 +130,8 @@ namespace Standard
 					}
 
 					// コントローラを初期化
-					postscript << "Plc::InitializeController()";
-					auto resultInitialize = Plc::InitializeController(setting);
+					postscript << "Plc::Controller::Initialize()";
+					auto resultInitialize = Plc::Controller::Initialize(setting);
 					postscript.str("");
 
 					// 排他制御
@@ -199,8 +200,8 @@ namespace Standard
 						setting.Close.Handle = m_controller.Handle;
 
 						// コントローラを破棄
-						postscript << "Plc::DestroyController()";
-						Plc::DestroyController(setting);
+						postscript << "Plc::Controller::Destroy()";
+						Plc::Controller::Destroy(setting);
 						postscript.str("");
 
 						// ハンドルを初期化
@@ -313,8 +314,8 @@ namespace Standard
 						content.Size = addressRange.Size;
 
 						// レジスタの読み込み
-						postscript << "Plc::GetRegister()";
-						auto result = Plc::GetRegister(content);
+						postscript << "Plc::Register::Get()";
+						auto result = Plc::Register::Get(content);
 						postscript.str("");
 
 						// レジスタの値を格納
@@ -443,8 +444,8 @@ namespace Standard
 							}
 
 							// レジスタを更新
-							postscript << "Plc::SetRegister()";
-							Plc::SetRegister(setting);
+							postscript << "Plc::Register::Set()";
+							Plc::Register::Set(setting);
 							postscript.str("");
 						}
 

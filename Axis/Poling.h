@@ -10,11 +10,11 @@ namespace Standard
 {
 	namespace Axis
 	{
-		namespace Surveillance
+		namespace Execution
 		{
 			////////////////////////////////////////////////////////////////////////////////
 			/// @class      CFinish
-			/// @brief      制御を監視した結果のクラス
+			/// @brief      制御の結果を保持するクラス
 			///				⇒ 状態を監視した結果を保持するテンプレートのクラスから継承
 			////////////////////////////////////////////////////////////////////////////////
 			class CFinish
@@ -50,12 +50,12 @@ namespace Standard
 				}
 			};
 
-			//! 制御を監視した結果を通知する関数の定義
-			typedef void(OnWakeup)(const Surveillance::CFinish&);
+			//! 制御した結果を通知する関数の定義
+			typedef void(OnWakeup)(const Execution::CFinish&);
 
 			////////////////////////////////////////////////////////////////////////////////
 			/// @class      CSetting
-			/// @brief      制御を監視する設定のクラス
+			/// @brief      制御を実行する設定のクラス
 			////////////////////////////////////////////////////////////////////////////////
 			class CSetting
 			{
@@ -103,7 +103,7 @@ namespace Standard
 				//! 軸の状態(出力)を指定するクラス
 				Status::COutput Output;
 
-				//! 制御を監視した結果の通知を呼び出す関数
+				//! 制御した結果の通知を呼び出す関数
 				std::weak_ptr<std::function<OnWakeup>> Wakeup;
 			};
 		}
@@ -119,13 +119,13 @@ namespace Standard
 				/// @detail		軸の制御、軸の監視、状態の通知を行う
 				////////////////////////////////////////////////////////////////////////////////
 				class CTemplate
-					: virtual public Signal::Worker::CTemplateExpand<Poling::CSetting, Status::CInput, Surveillance::CSetting>
+					: virtual public Signal::Worker::CTemplateExpand<Poling::CSetting, Status::CInput, Execution::CSetting>
 				{
 				public:
 					////////////////////////////////////////////////////////////////////////////////
 					/// @brief			コンストラクタ
 					////////////////////////////////////////////////////////////////////////////////
-					CTemplate() : Signal::Worker::CTemplateExpand<Poling::CSetting, Status::CInput, Surveillance::CSetting>()
+					CTemplate() : Signal::Worker::CTemplateExpand<Poling::CSetting, Status::CInput, Execution::CSetting>()
 					{
 						std::string name;
 
@@ -147,10 +147,10 @@ namespace Standard
 				protected:
 					////////////////////////////////////////////////////////////////////////////////
 					/// @brief			処理の完了を起床
-					/// @param[in]		object	制御を監視した結果のクラス
-					/// @param[in]		function 制御を監視した結果の通知を呼び出す関数
+					/// @param[in]		object	制御を実行した結果のクラス
+					/// @param[in]		function 制御を実行した結果の通知を呼び出す関数
 					////////////////////////////////////////////////////////////////////////////////
-					void WakeupFinish(const Surveillance::CFinish& object, const std::weak_ptr<std::function<Surveillance::OnWakeup>>& function) noexcept
+					void WakeupFinish(const Execution::CFinish& object, const std::weak_ptr<std::function<Execution::OnWakeup>>& function) noexcept
 					{
 						Logging::CObject logging;
 
@@ -158,7 +158,7 @@ namespace Standard
 
 						try
 						{
-							Signal::Subject::CTemplate<Surveillance::CFinish> subject;
+							Signal::Subject::CTemplate<Execution::CFinish> subject;
 
 							// 関数を登録
 							subject.RegistrationFunction(function);

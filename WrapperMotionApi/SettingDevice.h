@@ -70,21 +70,6 @@ namespace Standard
 			};
 
 			////////////////////////////////////////////////////////////////////////////////
-			/// @enum			データタイプ
-			////////////////////////////////////////////////////////////////////////////////
-			enum EnumData
-			{
-				DataMaxVelocity = 0,		// 速度の上限値、送り最高速度
-				DataAcceleration = 1,		// 加速度[指令単位/sec^2]／加速時定数[ms]
-				DataDeceleration = 2,		// 減速度[指令単位/sec^2]／減速時定数[ms]
-				DataFilterTime = 3,			// EnumFilterがFilterCurveまたはFilterExpを選択時に有効
-				DataVelocity = 4,			// 速度
-				DataApproachVelocity = 5,	// 原点復帰のアプローチ速度
-				DataCreepVelocity = 6		// 原点復帰のクリープ速度
-			};
-			typedef Iterator::CWorker<EnumData, DataMaxVelocity, DataCreepVelocity> DataIterator;
-
-			////////////////////////////////////////////////////////////////////////////////
 			/// @enum			軸の方向
 			////////////////////////////////////////////////////////////////////////////////
 			enum EnumDirection
@@ -94,13 +79,46 @@ namespace Standard
 			};
 
 			////////////////////////////////////////////////////////////////////////////////
-			/// @enum			完了タイプ
+			/// @enum			完了の属性
 			////////////////////////////////////////////////////////////////////////////////
-			enum EnumCompleted
+			enum EnumComplete
 			{
 				CompleteDistribution = 0,	// 払い出し完了
 				CompletePositioning = 1,	// 位置決め完了
 				CompleteStart = 2			// 指令開始
+			};
+
+			////////////////////////////////////////////////////////////////////////////////
+			/// @enum			ポジションのデータタイプ
+			////////////////////////////////////////////////////////////////////////////////
+			enum EnumPositionData
+			{
+				PositionImmediate = 0,		// 直接指定 ※ポジションデータを指定
+				PositionIndirect = 1		// 関節指定 ※ポジションデータを格納しているレジスタハンドルを指定
+			};
+
+			////////////////////////////////////////////////////////////////////////////////
+			/// @enum			原点復帰の方式
+			////////////////////////////////////////////////////////////////////////////////
+			enum EnumOrigin
+			{
+				OriginDec1_C = 0,			// DEC1 + C相パルス方式
+				OriginZero = 1,				// ZERO信号方式
+				OriginDec1_Zero = 2,		// DEC1 + ZERO信号方式
+				OriginC = 3,				// C相パルス方式
+				OriginDec2_Zero = 4,		// DEC2 + ZERO信号方式
+				OriginDec1_L_Zero = 5,		// DEC1 + LMT + ZERO信号方式
+				OriginDec2_C = 6,			// DEC2 + C相信号方式
+				OriginDec1_L_C = 7,			// DEC1 + LMT + C相信号方式
+				OriginC_Only = 8,			// 新C相パルス方式
+				OriginPot_C = 9,			// POT & C相パルス方式
+				OriginPot_Only = 10,		// POT方式
+				OriginHomeLs_C = 11,		// HOME LS & C相パルス方式
+				OriginHomeLs_Only = 12,		// HOME LS方式
+				OriginNot_C = 13,			// NOT & C相パルス方式
+				OriginNot_Only = 14,		// NOT方式
+				OriginInput_C = 15,			// INPUT & C相パルス方式
+				OriginInput_Only = 16		// INPUT方式
 			};
 
 			namespace Setting
@@ -255,19 +273,152 @@ namespace Standard
 					}
 				};
 
+				namespace Suspend
+				{
+					////////////////////////////////////////////////////////////////////////////////
+					/// @class      CAxis
+					/// @brief      制御を停止する軸の設定クラス
+					///				⇒ 識別子を保持するクラスから派生
+					////////////////////////////////////////////////////////////////////////////////
+					class CAxis
+						: virtual public CIdentifier
+					{
+					public:
+						////////////////////////////////////////////////////////////////////////////////
+						/// @brief			コンストラクタ
+						////////////////////////////////////////////////////////////////////////////////
+						CAxis() : CIdentifier()
+						{
+							Address = 0;
+						}
+
+						////////////////////////////////////////////////////////////////////////////////
+						/// @brief			コピー代入演算子
+						/// @return			自クラス
+						////////////////////////////////////////////////////////////////////////////////
+						CAxis& operator = (const CAxis& object) noexcept
+						{
+							// 更新
+							Update(object);
+
+							return *this;
+						}
+
+						////////////////////////////////////////////////////////////////////////////////
+						/// @brief			デストラクタ
+						////////////////////////////////////////////////////////////////////////////////
+						~CAxis()
+						{
+
+						}
+
+					protected:
+						////////////////////////////////////////////////////////////////////////////////
+						/// @brief			自クラスを更新
+						/// @param[in]		object	自クラス
+						////////////////////////////////////////////////////////////////////////////////
+						void Update(const CAxis& object)
+						{
+							// 既定の関数
+							CIdentifier::Update(object);
+
+							this->Address = object.Address;
+						}
+
+					public:
+						//! 軸のレジスタ先頭アドレス
+						unsigned short Address;
+					};
+				}
+
 				////////////////////////////////////////////////////////////////////////////////
-				/// @class      CServo
-				/// @brief      サーボの制御を行う設定クラス
+				/// @class      CSuspend
+				/// @brief      制御の停止を設定するクラス
 				///				⇒ 識別子を保持するクラスから派生
 				////////////////////////////////////////////////////////////////////////////////
-				class CServo
+				class CSuspend
 					: virtual public CIdentifier
 				{
 				public:
 					////////////////////////////////////////////////////////////////////////////////
 					/// @brief			コンストラクタ
 					////////////////////////////////////////////////////////////////////////////////
-					CServo() : CIdentifier()
+					CSuspend() : CIdentifier()
+					{
+
+					}
+
+					////////////////////////////////////////////////////////////////////////////////
+					/// @brief			コピー代入演算子
+					/// @return			自クラス
+					////////////////////////////////////////////////////////////////////////////////
+					CSuspend& operator = (const CSuspend& object) noexcept
+					{
+						// 更新
+						Update(object);
+
+						return *this;
+					}
+
+					////////////////////////////////////////////////////////////////////////////////
+					/// @brief			デストラクタ
+					////////////////////////////////////////////////////////////////////////////////
+					~CSuspend()
+					{
+
+					}
+
+				public:
+					////////////////////////////////////////////////////////////////////////////////
+					/// @brief			デバイスのハンドルを作成する設定クラスを取得
+					/// @param[in]		object	自クラス
+					////////////////////////////////////////////////////////////////////////////////
+					CDeclare GetDeclare()
+					{
+						CDeclare ret;
+
+						// 軸を走査
+						for (const auto& axis : Axises)
+						{
+							// ハンドルを追加
+							ret.Handles.emplace_back(axis.Handle);
+						}
+
+						return ret;
+					}
+
+				protected:
+					////////////////////////////////////////////////////////////////////////////////
+					/// @brief			自クラスを更新
+					/// @param[in]		object	自クラス
+					////////////////////////////////////////////////////////////////////////////////
+					void Update(const CSuspend& object)
+					{
+						// 既定の関数
+						CIdentifier::Update(object);
+
+						this->Axises.clear();
+						std::copy(object.Axises.begin(), object.Axises.end(), std::back_inserter(this->Axises));
+					}
+
+				public:
+					//! 制御を停止する軸の状態クラス
+					std::vector<Suspend::CAxis> Axises;
+				};
+
+				////////////////////////////////////////////////////////////////////////////////
+				/// @class      CServo
+				/// @brief      サーボの制御を行う設定クラス
+				///				⇒ 識別子を保持するクラスから派生
+				////////////////////////////////////////////////////////////////////////////////
+				class CServo
+					: virtual public CIdentifier, virtual public CDeclare
+				{
+				public:
+					////////////////////////////////////////////////////////////////////////////////
+					/// @brief			コンストラクタ
+					////////////////////////////////////////////////////////////////////////////////
+					CServo() : CIdentifier(), CDeclare()
 					{
 						Mode = Signal::StatusOff;
 						Timeout = 5000;
@@ -302,6 +453,7 @@ namespace Standard
 					{
 						// 既定の関数
 						CIdentifier::Update(object);
+						CDeclare::Update(object);
 
 						this->Mode = object.Mode;
 						this->Timeout = object.Timeout;
@@ -318,18 +470,71 @@ namespace Standard
 				namespace Motion
 				{
 					////////////////////////////////////////////////////////////////////////////////
-					/// @class      CTemplate
-					/// @brief      軸の制御を行うテンプレートの設定クラス
-					///				⇒ 識別子を保持するクラスから派生
+					/// @class      CContent
+					/// @brief      モーションのデータを保持するクラス
 					////////////////////////////////////////////////////////////////////////////////
-					class CTemplate
-						: virtual public CIdentifier
+					class CContent
 					{
 					public:
 						////////////////////////////////////////////////////////////////////////////////
 						/// @brief			コンストラクタ
 						////////////////////////////////////////////////////////////////////////////////
-						CTemplate() : CIdentifier()
+						CContent()
+						{
+							Indirect = true;
+							Value = 0;
+						}
+
+						////////////////////////////////////////////////////////////////////////////////
+						/// @brief			コピー代入演算子
+						/// @return			自クラス
+						////////////////////////////////////////////////////////////////////////////////
+						CContent& operator = (const CContent& object) noexcept
+						{
+							// 更新
+							Update(object);
+
+							return *this;
+						}
+
+						////////////////////////////////////////////////////////////////////////////////
+						/// @brief			デストラクタ
+						////////////////////////////////////////////////////////////////////////////////
+						~CContent()
+						{
+
+						}
+
+					protected:
+						////////////////////////////////////////////////////////////////////////////////
+						/// @brief			自クラスを更新
+						/// @param[in]		object	自クラス
+						////////////////////////////////////////////////////////////////////////////////
+						void Update(const CContent& object)
+						{
+							this->Indirect = object.Indirect;
+							this->Value = object.Value;
+						}
+
+					public:
+						//! 関節指定
+						bool Indirect;
+
+						//! データの値
+						unsigned long Value;
+					};
+
+					////////////////////////////////////////////////////////////////////////////////
+					/// @class      CTemplate
+					/// @brief      モーションの設定を保持するテンプレートのクラス
+					////////////////////////////////////////////////////////////////////////////////
+					class CTemplate
+					{
+					public:
+						////////////////////////////////////////////////////////////////////////////////
+						/// @brief			コンストラクタ
+						////////////////////////////////////////////////////////////////////////////////
+						CTemplate()
 						{
 							Coordinate = CoodinateMachine;
 							MoveType = MoveAbsolute;
@@ -360,18 +565,52 @@ namespace Standard
 
 					public:
 						////////////////////////////////////////////////////////////////////////////////
-						/// @brief			シリアライズ
+						/// @brief			関節指定のデータをレジスタの先頭アドレスからの値に更新
+						/// @param[in]		address	レジスタの先頭アドレス
 						////////////////////////////////////////////////////////////////////////////////
-						friend class cereal::access;
-						template<class T>
-						void serialize(T& archive)
+						void Reflection(unsigned short address)
 						{
-							archive(cereal::make_nvp("Handle", Handle));
-							archive(cereal::make_nvp("Coordinate", Coordinate));
-							archive(cereal::make_nvp("MoveType", MoveType));
-							archive(cereal::make_nvp("VelocityType", VelocityType));
-							archive(cereal::make_nvp("AccDecType", AccDecType));
-							archive(cereal::make_nvp("FilterType", FilterType));
+							// 速度の上限値、送り最高速度
+							if (MaxVelocity.Indirect)
+							{
+								MaxVelocity.Value = address + 0x10;
+							}
+
+							// 加速度[指令単位/sec^2]／加速時定数[ms]
+							if (Acceleration.Indirect)
+							{
+								Acceleration.Value = address + 0x36;
+							}
+
+							// 減速度[指令単位/sec^2]／減速時定数[ms]
+							if (Deceleration.Indirect)
+							{
+								Deceleration.Value = address + 0x38;
+							}
+
+							// フィルタ時間 ※0.1[ms]
+							if (FilterTime.Indirect)
+							{
+								FilterTime.Value = address + 0x3A;
+							}
+
+							// 速度
+							if (Velocity.Indirect)
+							{
+								Velocity.Value = address + 0x10;
+							}
+
+							// 原点復帰のアプローチ速度
+							if (ApproachVelocity.Indirect)
+							{
+								ApproachVelocity.Value = address + 0x3E;
+							}
+
+							// 原点復帰のクリープ速度
+							if (CreepVelocity.Indirect)
+							{
+								CreepVelocity.Value = address + 0x40;
+							}
 						}
 
 					protected:
@@ -381,15 +620,18 @@ namespace Standard
 						////////////////////////////////////////////////////////////////////////////////
 						void Update(const CTemplate& object)
 						{
-							// 既定の関数
-							CIdentifier::Update(object);
-
 							this->Coordinate = object.Coordinate;
 							this->MoveType = object.MoveType;
 							this->VelocityType = object.VelocityType;
 							this->AccDecType = object.AccDecType;
 							this->FilterType = object.FilterType;
-							this->Datas = object.Datas;
+							this->MaxVelocity = object.MaxVelocity;
+							this->Acceleration = object.Acceleration;
+							this->Deceleration = object.Deceleration;
+							this->FilterTime = object.FilterTime;
+							this->Velocity = object.Velocity;
+							this->ApproachVelocity = object.ApproachVelocity;
+							this->CreepVelocity = object.CreepVelocity;
 						}
 
 					public:
@@ -408,215 +650,361 @@ namespace Standard
 						//! 加減速フィルタタイプ
 						EnumFilter FilterType;
 
-						//! データ
-						std::map<EnumData, unsigned long> Datas;
+						//! 速度の上限値、送り最高速度
+						CContent MaxVelocity;
+
+						//! 加速度[指令単位/sec^2]／加速時定数[ms]
+						CContent Acceleration;
+
+						//! 減速度[指令単位/sec^2]／減速時定数[ms]
+						CContent Deceleration;
+
+						//! フィルタ時間 ※0.1[ms]
+						CContent FilterTime;
+
+						//! 速度
+						CContent Velocity;
+
+						//! 原点復帰のアプローチ速度
+						CContent ApproachVelocity;
+
+						//! 原点復帰のクリープ速度
+						CContent CreepVelocity;
+					};
+				}
+
+				namespace Position
+				{
+					////////////////////////////////////////////////////////////////////////////////
+					/// @class      CTemplate
+					/// @brief      ポジションの設定を保持するテンプレートのクラス
+					////////////////////////////////////////////////////////////////////////////////
+					class CTemplate
+					{
+					public:
+						////////////////////////////////////////////////////////////////////////////////
+						/// @brief			コンストラクタ
+						////////////////////////////////////////////////////////////////////////////////
+						CTemplate()
+						{
+							PositionType = PositionIndirect;
+							PositionData = 0;
+						}
+
+						////////////////////////////////////////////////////////////////////////////////
+						/// @brief			コピー代入演算子
+						/// @return			自クラス
+						////////////////////////////////////////////////////////////////////////////////
+						CTemplate& operator = (const CTemplate& object) noexcept
+						{
+							// 更新
+							Update(object);
+
+							return *this;
+						}
+
+						////////////////////////////////////////////////////////////////////////////////
+						/// @brief			デストラクタ
+						////////////////////////////////////////////////////////////////////////////////
+						~CTemplate()
+						{
+
+						}
+
+					protected:
+						////////////////////////////////////////////////////////////////////////////////
+						/// @brief			自クラスを更新
+						/// @param[in]		object	自クラス
+						////////////////////////////////////////////////////////////////////////////////
+						void Update(const CTemplate& object)
+						{
+							this->PositionType = object.PositionType;
+							this->PositionData = object.PositionData;
+						}
+
+					public:
+						//! ポジションのタイプ
+						EnumPositionData PositionType;
+
+						//! ポジションのデータ
+						long PositionData;
+					};
+				}
+
+				namespace Origin
+				{
+					////////////////////////////////////////////////////////////////////////////////
+					/// @class      CAxis
+					/// @brief      軸の原点復帰を行う設定クラス
+					///				⇒ 識別子を保持するクラスから派生
+					///				⇒ モーションの設定を保持するテンプレートのクラスから派生
+					///				⇒ ポジションの設定を保持するテンプレートのクラスから派生
+					////////////////////////////////////////////////////////////////////////////////
+					class CAxis
+						: virtual public CIdentifier, virtual public Motion::CTemplate, virtual public Position::CTemplate
+					{
+					public:
+						////////////////////////////////////////////////////////////////////////////////
+						/// @brief			コンストラクタ
+						////////////////////////////////////////////////////////////////////////////////
+						CAxis() : CIdentifier(), Motion::CTemplate(), Position::CTemplate()
+						{
+							Method = OriginDec1_C;
+							Direction = DirectionNegative;
+							Complete = CompleteStart;
+						}
+
+						////////////////////////////////////////////////////////////////////////////////
+						/// @brief			コピー代入演算子
+						/// @return			自クラス
+						////////////////////////////////////////////////////////////////////////////////
+						CAxis& operator = (const CAxis& object) noexcept
+						{
+							// 更新
+							Update(object);
+
+							return *this;
+						}
+
+						////////////////////////////////////////////////////////////////////////////////
+						/// @brief			デストラクタ
+						////////////////////////////////////////////////////////////////////////////////
+						~CAxis()
+						{
+
+						}
+
+					protected:
+						////////////////////////////////////////////////////////////////////////////////
+						/// @brief			自クラスを更新
+						/// @param[in]		object	自クラス
+						////////////////////////////////////////////////////////////////////////////////
+						void Update(const CAxis& object)
+						{
+							// 既定の関数
+							CIdentifier::Update(object);
+							Motion::CTemplate::Update(object);
+							Position::CTemplate::Update(object);
+
+							this->Method = object.Method;
+							this->Direction = object.Direction;
+							this->Complete = object.Complete;
+						}
+
+					public:
+						//! 原点復帰の方式
+						EnumOrigin Method;
+
+						//! 移動する方向
+						EnumDirection Direction;
+
+						//! 完了の属性
+						EnumComplete Complete;
+					};
+				}
+
+				namespace Jog
+				{
+					////////////////////////////////////////////////////////////////////////////////
+					/// @class      CStart
+					/// @brief      ジョグの開始を行う設定クラス
+					///				⇒ 識別子を保持するクラスから派生
+					///				⇒ モーションの設定を保持するテンプレートのクラスから派生
+					////////////////////////////////////////////////////////////////////////////////
+					class CStart
+						: virtual public CIdentifier, virtual public Motion::CTemplate
+					{
+					public:
+						////////////////////////////////////////////////////////////////////////////////
+						/// @brief			コンストラクタ
+						////////////////////////////////////////////////////////////////////////////////
+						CStart() : CIdentifier(), Motion::CTemplate()
+						{
+							Direction = DirectionPositive;
+							Timeout = 0;
+						}
+
+						////////////////////////////////////////////////////////////////////////////////
+						/// @brief			コピー代入演算子
+						/// @return			自クラス
+						////////////////////////////////////////////////////////////////////////////////
+						CStart& operator = (const CStart& object) noexcept
+						{
+							// 更新
+							Update(object);
+
+							return *this;
+						}
+
+						////////////////////////////////////////////////////////////////////////////////
+						/// @brief			デストラクタ
+						////////////////////////////////////////////////////////////////////////////////
+						~CStart()
+						{
+
+						}
+
+					protected:
+						////////////////////////////////////////////////////////////////////////////////
+						/// @brief			自クラスを更新
+						/// @param[in]		object	自クラス
+						////////////////////////////////////////////////////////////////////////////////
+						void Update(const CStart& object)
+						{
+							// 既定の関数
+							CIdentifier::Update(object);
+							Motion::CTemplate::Update(object);
+
+							this->Direction = object.Direction;
+							this->Timeout = object.Timeout;
+						}
+
+					public:
+						//! 方向
+						EnumDirection Direction;
+
+						//! タイムアウト[ms]
+						unsigned short Timeout;
 					};
 
-					namespace Jog
+					////////////////////////////////////////////////////////////////////////////////
+					/// @class      CStop
+					/// @brief      ジョグの停止を行う設定クラス
+					///				⇒ 識別子を保持するクラスから派生
+					////////////////////////////////////////////////////////////////////////////////
+					class CStop
+						: virtual public CIdentifier
 					{
+					public:
 						////////////////////////////////////////////////////////////////////////////////
-						/// @class      CStart
-						/// @brief      軸のジョグ実行を行う設定クラス
-						///				⇒ 軸の制御を行うテンプレートの設定クラスから派生
+						/// @brief			コンストラクタ
 						////////////////////////////////////////////////////////////////////////////////
-						class CStart
-							: virtual public CTemplate
+						CStop() : CIdentifier()
 						{
-						private:
-							//! シリアライズのタイトル
-							const std::string ConstHeader = "CStart";
-
-						public:
-							////////////////////////////////////////////////////////////////////////////////
-							/// @brief			コンストラクタ
-							////////////////////////////////////////////////////////////////////////////////
-							CStart() : CTemplate()
-							{
-								Direction = DirectionPositive;
-								Timeout = 0;
-							}
-
-							////////////////////////////////////////////////////////////////////////////////
-							/// @brief			コピー代入演算子
-							/// @return			自クラス
-							////////////////////////////////////////////////////////////////////////////////
-							CStart& operator = (const CStart& object) noexcept
-							{
-								// 更新
-								Update(object);
-
-								return *this;
-							}
-
-							////////////////////////////////////////////////////////////////////////////////
-							/// @brief			デストラクタ
-							////////////////////////////////////////////////////////////////////////////////
-							~CStart()
-							{
-
-							}
-
-						public:
-							////////////////////////////////////////////////////////////////////////////////
-							/// @brief			シリアライズ
-							////////////////////////////////////////////////////////////////////////////////
-							friend class cereal::access;
-							template<class T>
-							void serialize(T& archive)
-							{
-								// 既定の関数
-								CTemplate::serialize(archive);
-
-								archive(cereal::make_nvp("Direction", Direction));
-								archive(cereal::make_nvp("Timeout", Timeout));
-							}
-
-							////////////////////////////////////////////////////////////////////////////////
-							/// @brief			Json形式にシリアライズした文字列から更新
-							/// @param[in]		object	Json形式にシリアライズした文字列
-							////////////////////////////////////////////////////////////////////////////////
-							void Input(std::string object)
-							{
-								// Json形式から変換
-								Update(Archive::Input<CStart>(ConstHeader, object));
-							}
-
-							////////////////////////////////////////////////////////////////////////////////
-							/// @brief			Json形式にシリアライズした文字列を取得
-							/// @return			シリアライズした文字列
-							////////////////////////////////////////////////////////////////////////////////
-							std::string Output()
-							{
-								std::string ret;
-
-								// Json形式に変換
-								ret = Archive::Output<CStart>(ConstHeader, *this);
-
-								return ret;
-							}
-
-						protected:
-							////////////////////////////////////////////////////////////////////////////////
-							/// @brief			自クラスを更新
-							/// @param[in]		object	自クラス
-							////////////////////////////////////////////////////////////////////////////////
-							void Update(const CStart& object)
-							{
-								// 既定の関数
-								CTemplate::Update(object);
-
-								this->Direction = object.Direction;
-								this->Timeout = object.Timeout;
-							}
-
-						public:
-							//! 方向
-							EnumDirection Direction;
-
-							//! タイムアウト[ms]
-							unsigned short Timeout;
-						};
+							Complete = CompletePositioning;
+						}
 
 						////////////////////////////////////////////////////////////////////////////////
-						/// @class      CStop
-						/// @brief      軸のジョグ停止を行う設定クラス
-						///				⇒ 識別子を保持するクラスから派生
+						/// @brief			コピー代入演算子
+						/// @return			自クラス
 						////////////////////////////////////////////////////////////////////////////////
-						class CStop
-							: virtual public CIdentifier
+						CStop& operator = (const CStop& object) noexcept
 						{
-						private:
-							//! シリアライズのタイトル
-							const std::string ConstHeader = "CStop";
+							// 更新
+							Update(object);
 
-						public:
-							////////////////////////////////////////////////////////////////////////////////
-							/// @brief			コンストラクタ
-							////////////////////////////////////////////////////////////////////////////////
-							CStop() : CIdentifier()
-							{
-								Completed = CompletePositioning;
-							}
+							return *this;
+						}
 
-							////////////////////////////////////////////////////////////////////////////////
-							/// @brief			コピー代入演算子
-							/// @return			自クラス
-							////////////////////////////////////////////////////////////////////////////////
-							CStop& operator = (const CStop& object) noexcept
-							{
-								// 更新
-								Update(object);
+						////////////////////////////////////////////////////////////////////////////////
+						/// @brief			デストラクタ
+						////////////////////////////////////////////////////////////////////////////////
+						~CStop()
+						{
 
-								return *this;
-							}
+						}
 
-							////////////////////////////////////////////////////////////////////////////////
-							/// @brief			デストラクタ
-							////////////////////////////////////////////////////////////////////////////////
-							~CStop()
-							{
+					protected:
+						////////////////////////////////////////////////////////////////////////////////
+						/// @brief			自クラスを更新
+						/// @param[in]		object	自クラス
+						////////////////////////////////////////////////////////////////////////////////
+						void Update(const CStop& object)
+						{
+							// 既定の関数
+							CIdentifier::Update(object);
 
-							}
+							this->Complete = object.Complete;
+						}
 
-						public:
-							////////////////////////////////////////////////////////////////////////////////
-							/// @brief			シリアライズ
-							////////////////////////////////////////////////////////////////////////////////
-							friend class cereal::access;
-							template<class T>
-							void serialize(T& archive)
-							{
-								archive(cereal::make_nvp("Handle", Handle));
-								archive(cereal::make_nvp("Completed", Completed));
-							}
-
-							////////////////////////////////////////////////////////////////////////////////
-							/// @brief			Json形式にシリアライズした文字列から更新
-							/// @param[in]		object	Json形式にシリアライズした文字列
-							////////////////////////////////////////////////////////////////////////////////
-							void Input(std::string object)
-							{
-								// Json形式から変換
-								Update(Archive::Input<CStop>(ConstHeader, object));
-							}
-
-							////////////////////////////////////////////////////////////////////////////////
-							/// @brief			Json形式にシリアライズした文字列を取得
-							/// @return			シリアライズした文字列
-							////////////////////////////////////////////////////////////////////////////////
-							std::string Output()
-							{
-								std::string ret;
-
-								// Json形式に変換
-								ret = Archive::Output<CStop>(ConstHeader, *this);
-
-								return ret;
-							}
-
-						protected:
-							////////////////////////////////////////////////////////////////////////////////
-							/// @brief			自クラスを更新
-							/// @param[in]		object	自クラス
-							////////////////////////////////////////////////////////////////////////////////
-							void Update(const CStop& object)
-							{
-								// 既定の関数
-								CIdentifier::Update(object);
-
-								this->Completed = object.Completed;
-							}
-
-						public:
-							//! 完了タイプ
-							EnumCompleted Completed;
-						};
-					}
+					public:
+						//! 完了の属性
+						EnumComplete Complete;
+					};
 				}
 
 				////////////////////////////////////////////////////////////////////////////////
+				/// @class      CMoveOrigin
+				/// @brief      原点復帰を実行する設定クラス
+				///				⇒ 識別子を保持するクラスから派生
+				////////////////////////////////////////////////////////////////////////////////
+				class CMoveOrigin
+					: virtual public CIdentifier
+				{
+				public:
+					////////////////////////////////////////////////////////////////////////////////
+					/// @brief			コンストラクタ
+					////////////////////////////////////////////////////////////////////////////////
+					CMoveOrigin() : CIdentifier()
+					{
+						Timeout = 30000;
+					}
+
+					////////////////////////////////////////////////////////////////////////////////
+					/// @brief			コピー代入演算子
+					/// @return			自クラス
+					////////////////////////////////////////////////////////////////////////////////
+					CMoveOrigin& operator = (const CMoveOrigin& object) noexcept
+					{
+						// 更新
+						Update(object);
+
+						return *this;
+					}
+
+					////////////////////////////////////////////////////////////////////////////////
+					/// @brief			デストラクタ
+					////////////////////////////////////////////////////////////////////////////////
+					~CMoveOrigin()
+					{
+
+					}
+
+				public:
+					////////////////////////////////////////////////////////////////////////////////
+					/// @brief			デバイスのハンドルを作成する設定クラスを取得
+					/// @param[in]		object	自クラス
+					////////////////////////////////////////////////////////////////////////////////
+					CDeclare GetDeclare()
+					{
+						CDeclare ret;
+
+						// 軸を走査
+						for (const auto& axis : Axises)
+						{
+							// ハンドルを追加
+							ret.Handles.emplace_back(axis.Handle);
+						}
+
+						return ret;
+					}
+
+				protected:
+					////////////////////////////////////////////////////////////////////////////////
+					/// @brief			自クラスを更新
+					/// @param[in]		object	自クラス
+					////////////////////////////////////////////////////////////////////////////////
+					void Update(const CMoveOrigin& object)
+					{
+						// 既定の関数
+						CIdentifier::Update(object);
+
+						this->Axises.clear();
+						std::copy(object.Axises.begin(), object.Axises.end(), std::back_inserter(this->Axises));
+						this->Timeout = object.Timeout;
+					}
+
+				public:
+					//! 軸の原点復帰を行う設定クラス
+					std::vector<Origin::CAxis> Axises;
+
+					//! タイムアウト[ms]
+					unsigned short Timeout;
+				};
+
+				////////////////////////////////////////////////////////////////////////////////
 				/// @class      CStartJog
-				/// @brief      軸のジョグを実行する設定クラス
+				/// @brief      ジョグの開始を設定するクラス
 				///				⇒ 識別子を保持するクラスから派生
 				////////////////////////////////////////////////////////////////////////////////
 				class CStartJog
@@ -660,11 +1048,11 @@ namespace Standard
 					{
 						CDeclare ret;
 
-						// 軸のジョグ実行を行う設定クラスを走査
-						for (const auto& motion : Motions)
+						// 軸を走査
+						for (const auto& axis : Axises)
 						{
 							// ハンドルを追加
-							ret.Handles.emplace_back(motion.Handle);
+							ret.Handles.emplace_back(axis.Handle);
 						}
 
 						return ret;
@@ -680,18 +1068,18 @@ namespace Standard
 						// 既定の関数
 						CIdentifier::Update(object);
 
-						this->Motions.clear();
-						std::copy(object.Motions.begin(), object.Motions.end(), std::back_inserter(this->Motions));
+						this->Axises.clear();
+						std::copy(object.Axises.begin(), object.Axises.end(), std::back_inserter(this->Axises));
 					}
 
 				public:
-					//! 軸のジョグ実行を行う設定クラス
-					std::vector<Motion::Jog::CStart> Motions;
+					//! ジョグの開始を行う設定クラス
+					std::vector<Jog::CStart> Axises;
 				};
 
 				////////////////////////////////////////////////////////////////////////////////
 				/// @class      CStopJog
-				/// @brief      軸のジョグを停止する設定クラス
+				/// @brief      ジョグの停止を設定するクラス
 				///				⇒ 識別子を保持するクラスから派生
 				////////////////////////////////////////////////////////////////////////////////
 				class CStopJog
@@ -735,11 +1123,11 @@ namespace Standard
 					{
 						CDeclare ret;
 
-						// 軸のジョグ実行を行う設定クラスを走査
-						for (const auto& motion : Motions)
+						// 軸を走査
+						for (const auto& axis : Axises)
 						{
 							// ハンドルを追加
-							ret.Handles.emplace_back(motion.Handle);
+							ret.Handles.emplace_back(axis.Handle);
 						}
 
 						return ret;
@@ -755,13 +1143,13 @@ namespace Standard
 						// 既定の関数
 						CIdentifier::Update(object);
 
-						this->Motions.clear();
-						std::copy(object.Motions.begin(), object.Motions.end(), std::back_inserter(this->Motions));
+						this->Axises.clear();
+						std::copy(object.Axises.begin(), object.Axises.end(), std::back_inserter(this->Axises));
 					}
 
 				public:
 					//! 軸のジョグ停止を行う設定クラス
-					std::vector<Motion::Jog::CStop> Motions;
+					std::vector<Jog::CStop> Axises;
 				};
 			}
 		}

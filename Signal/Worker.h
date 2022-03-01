@@ -131,7 +131,7 @@ namespace Standard
 			////////////////////////////////////////////////////////////////////////////////
 			template <typename CSetting, typename CArgument, typename CWrite>
 			class CTemplate
-				: virtual public Thread::Worker::CTemplate, public Exception::Worker::CTemplate
+				: virtual public Thread::Worker::CTemplate, virtual public Exception::Worker::CTemplate
 			{
 			private:
 				////////////////////////////////////////////////////////////////////////////////
@@ -473,6 +473,23 @@ namespace Standard
 				}
 
 				////////////////////////////////////////////////////////////////////////////////
+				/// @brief			書き込む情報のクラス数を取得
+				/// @return			書き込む情報のクラス数
+				////////////////////////////////////////////////////////////////////////////////
+				size_t GetWriteSize()
+				{
+					size_t ret = 0;
+
+					// 排他制御
+					std::lock_guard<std::recursive_mutex> lock(m_asyncWrite);
+
+					// 書き込むデータのクラス数を取得
+					ret = m_writes.size();
+
+					return ret;
+				}
+
+				////////////////////////////////////////////////////////////////////////////////
 				/// @brief			書き込みを確認
 				///	@detail			書き込むデータのクラスが存在するか以外の判定は派生先で記述する
 				///					★派生先で記述する
@@ -491,11 +508,8 @@ namespace Standard
 
 					try
 					{
-						// 排他制御
-						std::lock_guard<std::recursive_mutex> lock(m_asyncWrite);
-
 						// 書き込む情報のクラス数を確認
-						if (0 < m_writes.size())
+						if (0 < GetWriteSize())
 						{
 							// 書き込むデータあり
 							ret = true;
@@ -512,7 +526,96 @@ namespace Standard
 
 				////////////////////////////////////////////////////////////////////////////////
 				/// @brief			書き込む情報のクラスを取得
-				///	@detail			先頭に登録してあるデータを削除する
+				/// @param[in]		書き込む情報のインデックス番号
+				/// @return			書き込む情報のクラス
+				////////////////////////////////////////////////////////////////////////////////
+				std::shared_ptr<CWrite> GetWrite(size_t index)
+				{
+					std::shared_ptr<CWrite> ret = nullptr;
+
+					Logging::CObject logging;
+					std::stringstream postscript;
+					Exception::EnumCode errorCode = Exception::CodeUnknown;
+					int deviceErrorCode = Exception::DeviceCodeSuccess;
+
+					logging.Message << GetName() << "GetWrite()" << Logging::ConstSeparator;
+
+					try
+					{
+						// 排他制御
+						std::lock_guard<std::recursive_mutex> lock(m_asyncWrite);
+
+						// 書き込むデータのクラス数を確認
+						if (m_writes.size() <= index)
+						{
+							// 書き込むデータなし
+							std::stringstream message;
+							message << "登録数:" << m_writes.size() << Logging::ConstSeparator << "指定:" << index;
+							throw message.str();
+						}
+
+						// 書き込むデータあり
+						ret = std::make_shared<CWrite>(*(m_writes.begin() + index));
+					}
+					catch (const std::exception& e)
+					{
+						// 例外の処理 ⇒ 例外を発砲
+						throw Exception::CObject(errorCode, Exception::Convert::Message(errorCode, deviceErrorCode, logging, postscript.str(), e));
+					}
+
+					return ret;
+				}
+
+				////////////////////////////////////////////////////////////////////////////////
+				/// @brief			書き込む情報のクラスを削除
+				/// @param[in]		indexs	書き込む情報のインデックス番号
+				////////////////////////////////////////////////////////////////////////////////
+				void PopWrite(const std::vector<size_t>& indexs)
+				{
+					Logging::CObject logging;
+					std::stringstream postscript;
+					Exception::EnumCode errorCode = Exception::CodeUnknown;
+					int deviceErrorCode = Exception::DeviceCodeSuccess;
+
+					logging.Message << GetName() << "PopWrite()" << Logging::ConstSeparator;
+
+					try
+					{
+						// 排他制御
+						std::lock_guard<std::recursive_mutex> lock(m_asyncWrite);
+
+						std::vector<size_t> targets;
+
+						// インデックス番号をコピー
+						std::copy(indexs.begin(), indexs.end(), std::back_inserter(targets));
+
+						// インデックス番号を降順でソート
+						std::sort(targets.begin(), targets.end(), std::greater<size_t>());
+
+						// インデックス番号を走査
+						for (const auto& index : targets)
+						{
+							// 書き込むデータのクラス数を確認
+							if (m_writes.size() <= index)
+							{
+								// 書き込むデータの範囲外
+								continue;
+							}
+
+							// データを削除
+							m_writes.erase(m_writes.begin() + index);
+						}
+					}
+					catch (const std::exception& e)
+					{
+						// 例外の処理 ⇒ 例外を発砲
+						throw Exception::CObject(errorCode, Exception::Convert::Message(errorCode, deviceErrorCode, logging, postscript.str(), e));
+					}
+				}
+
+				////////////////////////////////////////////////////////////////////////////////
+				/// @brief			書き込む情報のクラスを取得
+				///	@detail			先頭に登録してあるデータを取得する
 				/// @return			書き込む情報のクラス
 				////////////////////////////////////////////////////////////////////////////////
 				std::shared_ptr<CWrite> GetWriteFirst()
@@ -632,6 +735,9 @@ namespace Standard
 
 					try
 					{
+						// 書き込みフラグ
+						bool write = false;
+
 						switch (GetOrder())
 						{
 						case OrderWait:
@@ -702,18 +808,10 @@ namespace Standard
 
 						case OrderRead:
 							// 読み込み ⇒ 書き込むデータのクラスを確認
-							if (IsWrite())
-							{
-								// 書き込みデータあり ⇒ 書き込みへ移行
-								SetOrder(OrderWrite);
+							write = IsWrite();
 
-								// タイムアウトを初期化
-								ret = 0;
-								break;
-							}
-
-							// 停止の要求 or 破棄の要求を確認
-							if (GetRequestStop() || IsRequestDestroy())
+							// 書き込むデータがない and 停止の要求 or 破棄の要求を確認
+							if (write == false && (GetRequestStop() || IsRequestDestroy()))
 							{
 								// 停止要求 ⇒ 破棄へ移行
 								SetOrder(OrderDestroy);
@@ -728,6 +826,16 @@ namespace Standard
 
 							// リトライを初期化
 							InitializeRetry();
+
+							if (write)
+							{
+								// 書き込みデータあり ⇒ 書き込みへ移行
+								SetOrder(OrderWrite);
+
+								// タイムアウトを初期化
+								ret = 0;
+								break;
+							}
 
 							// メイン関数の周期でタイムアウトを設定
 							ret = GetCycle();

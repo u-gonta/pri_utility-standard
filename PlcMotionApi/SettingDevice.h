@@ -12,27 +12,28 @@ namespace Standard
 			namespace Setting
 			{
 				////////////////////////////////////////////////////////////////////////////////
-				/// @class      CInitialize
-				/// @brief      デバイスを初期化する設定クラス
+				/// @class      CSuspend
+				/// @brief      制御を停止する設定クラス
 				///				⇒ 設定するテンプレートのクラスから派生
+				///				⇒ 制御の停止を設定するクラスから派生
 				////////////////////////////////////////////////////////////////////////////////
-				class CInitialize
-					: virtual public CTemplate
+				class CSuspend
+					: virtual public CTemplate, virtual public MotionApi::Device::Setting::CSuspend
 				{
 				public:
 					////////////////////////////////////////////////////////////////////////////////
 					/// @brief			コンストラクタ
 					////////////////////////////////////////////////////////////////////////////////
-					CInitialize() : CTemplate()
+					CSuspend() : CTemplate(), MotionApi::Device::Setting::CSuspend()
 					{
-
+						Timeout = 1000;
 					}
 
 					////////////////////////////////////////////////////////////////////////////////
 					/// @brief			コピー代入演算子
 					/// @return			自クラス
 					////////////////////////////////////////////////////////////////////////////////
-					CInitialize& operator = (const CInitialize& object) noexcept
+					CSuspend& operator = (const CSuspend& object) noexcept
 					{
 						// 更新
 						Update(object);
@@ -43,7 +44,7 @@ namespace Standard
 					////////////////////////////////////////////////////////////////////////////////
 					/// @brief			デストラクタ
 					////////////////////////////////////////////////////////////////////////////////
-					~CInitialize()
+					~CSuspend()
 					{
 
 					}
@@ -53,87 +54,34 @@ namespace Standard
 					/// @brief			自クラスを更新
 					/// @param[in]		object	自クラス
 					////////////////////////////////////////////////////////////////////////////////
-					void Update(const CInitialize& object)
+					void Update(const CSuspend& object)
 					{
 						// 既定の関数
 						CTemplate::Update(object);
+						MotionApi::Device::Setting::CSuspend::Update(object);
 
-						this->Declare = object.Declare;
+						this->Timeout = object.Timeout;
 					}
 
 				public:
-					//! デバイスのハンドルを作成する設定クラス
-					MotionApi::Device::Setting::CDeclare Declare;
+					//! タイムアウト[ms]
+					unsigned short Timeout;
 				};
 
 				////////////////////////////////////////////////////////////////////////////////
-				/// @class      CDestroy
-				/// @brief      デバイスを破棄する設定クラス
-				///				⇒ 設定するテンプレートのクラスから派生
-				////////////////////////////////////////////////////////////////////////////////
-				class CDestroy
-					: virtual public CTemplate
-				{
-				public:
-					////////////////////////////////////////////////////////////////////////////////
-					/// @brief			コンストラクタ
-					////////////////////////////////////////////////////////////////////////////////
-					CDestroy() : CTemplate()
-					{
-
-					}
-
-					////////////////////////////////////////////////////////////////////////////////
-					/// @brief			コピー代入演算子
-					/// @return			自クラス
-					////////////////////////////////////////////////////////////////////////////////
-					CDestroy& operator = (const CDestroy& object) noexcept
-					{
-						// 更新
-						Update(object);
-
-						return *this;
-					}
-
-					////////////////////////////////////////////////////////////////////////////////
-					/// @brief			デストラクタ
-					////////////////////////////////////////////////////////////////////////////////
-					~CDestroy()
-					{
-
-					}
-
-				protected:
-					////////////////////////////////////////////////////////////////////////////////
-					/// @brief			自クラスを更新
-					/// @param[in]		object	自クラス
-					////////////////////////////////////////////////////////////////////////////////
-					void Update(const CDestroy& object)
-					{
-						// 既定の関数
-						CTemplate::Update(object);
-
-						this->Clear = object.Clear;
-					}
-
-				public:
-					//! デバイスのハンドルを破棄する設定クラス
-					MotionApi::Device::Setting::CClear Clear;
-				};
-
-				////////////////////////////////////////////////////////////////////////////////
-				/// @class      CServoControl
+				/// @class      CServo
 				/// @brief      サーボを制御する設定クラス
 				///				⇒ 設定するテンプレートのクラスから派生
+				///				⇒ サーボの制御を行う設定クラスから派生
 				////////////////////////////////////////////////////////////////////////////////
-				class CServoControl
-					: virtual public CTemplate
+				class CServo
+					: virtual public CTemplate, virtual public MotionApi::Device::Setting::CServo
 				{
 				public:
 					////////////////////////////////////////////////////////////////////////////////
 					/// @brief			コンストラクタ
 					////////////////////////////////////////////////////////////////////////////////
-					CServoControl() : CTemplate()
+					CServo() : CTemplate(), MotionApi::Device::Setting::CServo()
 					{
 
 					}
@@ -142,7 +90,7 @@ namespace Standard
 					/// @brief			コピー代入演算子
 					/// @return			自クラス
 					////////////////////////////////////////////////////////////////////////////////
-					CServoControl& operator = (const CServoControl& object) noexcept
+					CServo& operator = (const CServo& object) noexcept
 					{
 						// 更新
 						Update(object);
@@ -153,7 +101,7 @@ namespace Standard
 					////////////////////////////////////////////////////////////////////////////////
 					/// @brief			デストラクタ
 					////////////////////////////////////////////////////////////////////////////////
-					~CServoControl()
+					~CServo()
 					{
 
 					}
@@ -163,36 +111,79 @@ namespace Standard
 					/// @brief			自クラスを更新
 					/// @param[in]		object	自クラス
 					////////////////////////////////////////////////////////////////////////////////
-					void Update(const CServoControl& object)
+					void Update(const CServo& object)
 					{
 						// 既定の関数
 						CTemplate::Update(object);
+						MotionApi::Device::Setting::CServo::Update(object);
+					}
+				};
 
-						this->Device = object.Device;
-						this->Status = object.Status;
+				////////////////////////////////////////////////////////////////////////////////
+				/// @class      CMoveOrigin
+				/// @brief      原点復帰を実行する設定クラス
+				///				⇒ 設定するテンプレートのクラスから派生
+				///				⇒ 原点復帰を実行する設定クラスから派生
+				////////////////////////////////////////////////////////////////////////////////
+				class CMoveOrigin
+					: virtual public CTemplate, virtual public MotionApi::Device::Setting::CMoveOrigin
+				{
+				public:
+					////////////////////////////////////////////////////////////////////////////////
+					/// @brief			コンストラクタ
+					////////////////////////////////////////////////////////////////////////////////
+					CMoveOrigin() : CTemplate(), MotionApi::Device::Setting::CMoveOrigin()
+					{
+
 					}
 
-				public:
-					//! デバイスのハンドルを作成する設定クラス
-					MotionApi::Device::Setting::CDeclare Device;
+					////////////////////////////////////////////////////////////////////////////////
+					/// @brief			コピー代入演算子
+					/// @return			自クラス
+					////////////////////////////////////////////////////////////////////////////////
+					CMoveOrigin& operator = (const CMoveOrigin& object) noexcept
+					{
+						// 更新
+						Update(object);
 
-					//! サーボの制御を行う設定クラス
-					MotionApi::Device::Setting::CServo Status;
+						return *this;
+					}
+
+					////////////////////////////////////////////////////////////////////////////////
+					/// @brief			デストラクタ
+					////////////////////////////////////////////////////////////////////////////////
+					~CMoveOrigin()
+					{
+
+					}
+
+				protected:
+					////////////////////////////////////////////////////////////////////////////////
+					/// @brief			自クラスを更新
+					/// @param[in]		object	自クラス
+					////////////////////////////////////////////////////////////////////////////////
+					void Update(const CMoveOrigin& object)
+					{
+						// 既定の関数
+						CTemplate::Update(object);
+						MotionApi::Device::Setting::CMoveOrigin::Update(object);
+					}
 				};
 
 				////////////////////////////////////////////////////////////////////////////////
 				/// @class      CStartJog
-				/// @brief      ジョグを実行する設定クラス
+				/// @brief      ジョグを開始する設定クラス
 				///				⇒ 設定するテンプレートのクラスから派生
+				///				⇒ ジョグの開始を設定するクラスから派生
 				////////////////////////////////////////////////////////////////////////////////
 				class CStartJog
-					: virtual public CTemplate
+					: virtual public CTemplate, virtual public MotionApi::Device::Setting::CStartJog
 				{
 				public:
 					////////////////////////////////////////////////////////////////////////////////
 					/// @brief			コンストラクタ
 					////////////////////////////////////////////////////////////////////////////////
-					CStartJog() : CTemplate()
+					CStartJog() : CTemplate(), MotionApi::Device::Setting::CStartJog()
 					{
 
 					}
@@ -226,28 +217,24 @@ namespace Standard
 					{
 						// 既定の関数
 						CTemplate::Update(object);
-
-						this->Device = object.Device;
+						MotionApi::Device::Setting::CStartJog::Update(object);
 					}
-
-				public:
-					//! 軸のジョグを実行する設定クラス
-					MotionApi::Device::Setting::CStartJog Device;
 				};
 
 				////////////////////////////////////////////////////////////////////////////////
 				/// @class      CStopJog
 				/// @brief      ジョグを停止する設定クラス
 				///				⇒ 設定するテンプレートのクラスから派生
+				///				⇒ ジョグの停止を設定するクラスから派生
 				////////////////////////////////////////////////////////////////////////////////
 				class CStopJog
-					: virtual public CTemplate
+					: virtual public CTemplate, virtual public MotionApi::Device::Setting::CStopJog
 				{
 				public:
 					////////////////////////////////////////////////////////////////////////////////
 					/// @brief			コンストラクタ
 					////////////////////////////////////////////////////////////////////////////////
-					CStopJog() : CTemplate()
+					CStopJog() : CTemplate(), MotionApi::Device::Setting::CStopJog()
 					{
 
 					}
@@ -281,13 +268,8 @@ namespace Standard
 					{
 						// 既定の関数
 						CTemplate::Update(object);
-
-						this->Device = object.Device;
+						MotionApi::Device::Setting::CStopJog::Update(object);
 					}
-
-				public:
-					//! 軸のジョグを停止する設定クラス
-					MotionApi::Device::Setting::CStopJog Device;
 				};
 			}
 		}

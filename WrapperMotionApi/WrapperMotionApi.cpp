@@ -332,76 +332,130 @@ namespace Standard
 		{
 			MOTION_DATA ret;
 
-			//! 座標系
+			// 座標系
 			ret.CoordinateSystem = (WORD)object.Coordinate;
 
-			//! 動作タイプ
+			// 動作タイプ
 			ret.MoveType = (SHORT)object.MoveType;
 
-			//! 速度タイプ
+			// 速度タイプ
 			ret.VelocityType = (SHORT)object.VelocityType;
 
-			//! 加減速タイプ
+			// 加減速タイプ
 			ret.AccDecType = (SHORT)object.AccDecType;
 
-			//! 加減速フィルタタイプ
+			// 加減速フィルタタイプ
 			ret.FilterType = (SHORT)object.FilterType;
 
-			// データフラグ
+			// データフラグを初期化
 			ret.DataType = 0;
 
-			// データフラグ
-			for (const auto& iterator : Device::DataIterator())
+			// 速度の上限値、送り最高速度
+			if (object.MaxVelocity.Indirect)
 			{
-				// データタイプの登録を確認
-				if (object.Datas.count(iterator) <= 0)
-				{
-					// データタイプが未登録 ⇒ 次のデータタイプへ
-					continue;
-				}
-
-				// ビットをON
-				ret.DataType |= 0x01 << iterator;
-				switch (iterator)
-				{
-				case Device::DataMaxVelocity:
-					// 速度の上限値、送り最高速度
-					ret.MaxVelocity = (LONG)object.Datas.at(iterator);
-					break;
-
-				case Device::DataAcceleration:
-					// 加速度[指令単位/sec^2]／加速時定数[ms]
-					ret.Acceleration = (LONG)object.Datas.at(iterator);
-					break;
-
-				case Device::DataDeceleration:
-					// 減速度[指令単位/sec^2]／減速時定数[ms]
-					ret.Deceleration = (LONG)object.Datas.at(iterator);
-					break;
-
-				case Device::DataFilterTime:
-					// EnumFilterがFilterCurveまたはFilterExpを選択時に有効
-					ret.FilterTime = (LONG)object.Datas.at(iterator);
-					break;
-
-				case Device::DataVelocity:
-					// 速度
-					ret.Velocity = (LONG)object.Datas.at(iterator);
-					break;
-
-				case Device::DataApproachVelocity:
-					// 原点復帰のアプローチ速度
-					ret.ApproachVelocity = (LONG)object.Datas.at(iterator);
-					break;
-
-				case Device::DataCreepVelocity:
-					// 原点復帰のクリープ速度
-					ret.CreepVelocity = (LONG)object.Datas.at(iterator);
-					break;
-				}
+				// データフラグのビットをON
+				ret.DataType |= 0x01 << 0;
 			}
+			ret.MaxVelocity = (LONG)object.MaxVelocity.Value;
+
+			// 加速度[指令単位/sec^2]／加速時定数[ms]
+			if (object.Acceleration.Indirect)
+			{
+				// データフラグのビットをON
+				ret.DataType |= 0x01 << 1;
+			}
+			ret.Acceleration = (LONG)object.Acceleration.Value;
+
+			// 減速度[指令単位/sec^2]／減速時定数[ms]
+			if (object.Deceleration.Indirect)
+			{
+				// データフラグのビットをON
+				ret.DataType |= 0x01 << 2;
+			}
+			ret.Deceleration = (LONG)object.Deceleration.Value;
+
+			// フィルタ時間 ※0.1[ms]
+			if (object.FilterTime.Indirect)
+			{
+				// データフラグのビットをON
+				ret.DataType |= 0x01 << 3;
+			}
+			ret.FilterTime = (LONG)object.FilterTime.Value;
+
+			// 速度
+			if (object.Velocity.Indirect)
+			{
+				// データフラグのビットをON
+				ret.DataType |= 0x01 << 4;
+			}
+			ret.Velocity = (LONG)object.Velocity.Value;
+
+			// 原点復帰のアプローチ速度
+			if (object.ApproachVelocity.Indirect)
+			{
+				// データフラグのビットをON
+				ret.DataType |= 0x01 << 5;
+			}
+			ret.ApproachVelocity = (LONG)object.ApproachVelocity.Value;
+
+			// 原点復帰のクリープ速度
+			if (object.CreepVelocity.Indirect)
+			{
+				// データフラグのビットをON
+				ret.DataType |= 0x01 << 6;
+			}
+			ret.CreepVelocity = (LONG)object.CreepVelocity.Value;
 
 			return ret;
+		}
+
+		////////////////////////////////////////////////////////////////////////////////
+		/// @brief			軸の原点復帰を実行
+		/// @param[in]		object 軸の原点復帰を実行する設定クラス
+		////////////////////////////////////////////////////////////////////////////////
+		MOTION_API void MoveOrigin(const Device::Setting::CMoveOrigin& object)
+		{
+			unsigned long result = MP_SUCCESS;
+			std::stringstream postscript;
+
+			std::vector<MOTION_DATA> motions;
+			std::vector<POSITION_DATA> positions;
+			std::vector<WORD> methods;
+			std::vector<WORD> directions;
+			std::vector<WORD> completions;
+
+			// 軸を走査
+			for (const auto& axis : object.Axises)
+			{
+				// 軸の制御を行う状態を保持するクラスからライブラリへ渡す変数へ変換
+				motions.emplace_back(Convert(axis));
+
+				// 原点復帰の最終走行距離を追加
+				POSITION_DATA position;
+				position.DataType = (LONG)axis.PositionType;
+				position.PositionData = (LONG)axis.PositionData;
+				positions.emplace_back(position);
+
+				// 原点復帰の方式を追加
+				methods.emplace_back((WORD)axis.Method);
+
+				// 移動する方向を追加
+				directions.emplace_back((WORD)axis.Direction);
+
+				// 完了の属性を追加
+				completions.emplace_back((WORD)axis.Complete);
+			}
+
+			// 軸の原点復帰を実行
+			postscript << "ymcMoveHomePosition()";
+			result = ymcMoveHomePosition(object.Handle, motions.data(), positions.data(), methods.data(), directions.data(), 0, NULL, completions.data(), 0);
+
+			// 制御を確認
+			if (result != MP_SUCCESS)
+			{
+				// 制御に失敗 ⇒ 例外を発砲
+				throw CException(result, postscript.str());
+			}
 		}
 
 		////////////////////////////////////////////////////////////////////////////////
@@ -418,16 +472,16 @@ namespace Standard
 			std::vector<WORD> timeouts;
 
 			// 軸を走査
-			for (const auto& motion : object.Motions)
+			for (const auto& axis : object.Axises)
 			{
 				// 軸の制御を行う状態を保持するクラスからライブラリへ渡す変数へ変換
-				datas.emplace_back(Convert(motion));
+				datas.emplace_back(Convert(axis));
 
 				// 方向を追加
-				directions.emplace_back((WORD)motion.Direction);
+				directions.emplace_back((WORD)axis.Direction);
 
 				// タイムアウトを追加
-				timeouts.emplace_back((WORD)motion.Timeout);
+				timeouts.emplace_back((WORD)axis.Timeout);
 			}
 
 			// 軸のジョグ送りを実行
@@ -454,10 +508,10 @@ namespace Standard
 			std::vector<WORD> completeds;
 
 			// 軸を走査
-			for (const auto& motion : object.Motions)
+			for (const auto& axis : object.Axises)
 			{
-				// 完了タイプ
-				completeds.emplace_back((WORD)motion.Completed);
+				// 完了の属性
+				completeds.emplace_back((WORD)axis.Complete);
 			}
 
 			// 軸のジョグ送りを停止

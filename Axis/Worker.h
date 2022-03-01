@@ -125,7 +125,7 @@ namespace Standard
 
 					try
 					{
-						Surveillance::CSetting setting;
+						Execution::CSetting setting;
 
 						// 軸の状態(出力)を指定するクラスを更新
 						setting.Output = object;
@@ -166,16 +166,16 @@ namespace Standard
 					try
 					{
 						// トリガーを待機するクラス
-						Signal::Observer::CTemplate<Surveillance::CFinish> observer;
+						Signal::Observer::CTemplate<Execution::CFinish> observer;
 
 						// トリガーを通知をする関数を登録
 						postscript << "Subject::RegistrationFunction()";
-						std::shared_ptr<std::function<Surveillance::OnWakeup>> onWakeup = std::make_shared<std::function<Surveillance::OnWakeup>>(std::bind(&Signal::Observer::CTemplate<Surveillance::CFinish>::OnCalled, &observer, std::placeholders::_1));
+						std::shared_ptr<std::function<Execution::OnWakeup>> onWakeup = std::make_shared<std::function<Execution::OnWakeup>>(std::bind(&Signal::Observer::CTemplate<Execution::CFinish>::OnCalled, &observer, std::placeholders::_1));
 
 						// トリガーを待機するタイムアウトを更新
 						observer.Setting.Timeout = object.Timeout;
 
-						Surveillance::CSetting setting;
+						Execution::CSetting setting;
 
 						// 軸の状態(出力)を指定するクラスを更新
 						setting.Output = object;
@@ -198,7 +198,7 @@ namespace Standard
 
 						// 制御の結果を取得
 						postscript << "Observer::GetArgument()";
-						Surveillance::CFinish result = observer.GetArgument();
+						Execution::CFinish result = observer.GetArgument();
 						postscript.str("");
 
 						// 中断を確認
@@ -219,7 +219,7 @@ namespace Standard
 				}
 
 				////////////////////////////////////////////////////////////////////////////////
-				/// @brief			軸のサーボを制御して待機
+				/// @brief			サーボを制御して待機
 				/// @param[in]		object	軸のサーボ状態(出力)を指定するクラス
 				////////////////////////////////////////////////////////////////////////////////
 				void Servo(const Status::Output::CServo& object)
@@ -237,7 +237,6 @@ namespace Standard
 					Status::COutput output;
 
 					// 軸の状態(出力)を指定するクラスを更新
-
 					output.Command = object;
 
 					// 軸の制御を待機
@@ -245,7 +244,32 @@ namespace Standard
 				}
 
 				////////////////////////////////////////////////////////////////////////////////
-				/// @brief			軸のジョグを実行して待機
+				/// @brief			原点復帰を実行して待機
+				/// @param[in]		object	軸の原点復帰を指定するクラス
+				////////////////////////////////////////////////////////////////////////////////
+				void MoveOrigin(const Status::Output::CMoveOrigin& object)
+				{
+					Logging::CObject logging;
+					std::stringstream postscript;
+					Utility::CStopWatch stopWatch;
+
+					logging.Message << GetName() << "MoveOrigin()" << Logging::ConstSeparator;
+
+					// ログ出力
+					Transfer::Output(Logging::Join(logging, postscript.str()));
+					postscript.str("");
+
+					Status::COutput output;
+
+					// 軸の状態(出力)を指定するクラスを更新
+					output.Command = object;
+
+					// 軸の制御を待機
+					CommandPending(output);
+				}
+
+				////////////////////////////////////////////////////////////////////////////////
+				/// @brief			ジョグを開始して待機
 				/// @param[in]		object	軸のジョグ実行を指定するクラス
 				////////////////////////////////////////////////////////////////////////////////
 				void StartJog(const Status::Output::CStartJog& object)
@@ -270,7 +294,7 @@ namespace Standard
 				}
 
 				////////////////////////////////////////////////////////////////////////////////
-				/// @brief			軸のジョグを停止して待機
+				/// @brief			ジョグを停止して待機
 				/// @param[in]		object	軸のジョグ停止を指定するクラス
 				////////////////////////////////////////////////////////////////////////////////
 				void StopJog(const Status::Output::CStopJog& object)
@@ -614,18 +638,18 @@ namespace Standard
 					// 軸を走査
 					for (const auto& driver : object.Drivers)
 					{
-						// 運転ステータスを走査
-						for (const auto& running : driver.second.Running)
+						// 動作を走査
+						for (const auto& motion : driver.second.Motion)
 						{
 							postscript << driver.second.Name;
-							postscript << Logging::ConstSeparator << "運転ステータス:" << Text::Format(2, running.first);
+							postscript << Logging::ConstSeparator << "動作ステータス:" << Text::Format(2, motion.first);
 							postscript << Logging::ConstSeparator;
 
 							// 排他制御
 							std::lock_guard<std::recursive_mutex> lock(m_asyncData);
 
 							// 信号を更新
-							if (UpdateInput(logging, postscript, m_input.Drivers[driver.first].Running, running.second, running.first) == false)
+							if (UpdateInput(logging, postscript, m_input.Drivers[driver.first].Motion, motion.second, motion.first) == false)
 							{
 								// 値の変化なし ⇒ 次の信号へ
 								postscript.str("");
@@ -633,7 +657,7 @@ namespace Standard
 							}
 
 							// 新規or変化あり
-							changedInput.Drivers[driver.first].Running[running.first] = running.second;
+							changedInput.Drivers[driver.first].Motion[motion.first] = motion.second;
 							// ログ出力
 							Transfer::Output(Logging::Join(logging, postscript.str()));
 							postscript.str("");
@@ -698,34 +722,6 @@ namespace Standard
 							notify = true;
 						}
 
-						// 位置を走査
-						for (const auto& position : driver.second.Position)
-						{
-							postscript << driver.second.Name;
-							postscript << Logging::ConstSeparator << "位置:" << Text::Format(2, position.first);
-							postscript << Logging::ConstSeparator;
-
-							// 排他制御
-							std::lock_guard<std::recursive_mutex> lock(m_asyncData);
-
-							// 信号を更新
-							if (UpdateInput(logging, postscript, m_input.Drivers[driver.first].Position, position.second, position.first) == false)
-							{
-								// 値の変化なし ⇒ 次の信号へ
-								postscript.str("");
-								continue;
-							}
-
-							// 新規or変化あり
-							changedInput.Drivers[driver.first].Position[position.first] = position.second;
-							// ログ出力
-							Transfer::Output(Logging::Join(logging, postscript.str()));
-							postscript.str("");
-
-							// 値あり
-							notify = true;
-						}
-
 						// 座標を走査
 						for (const auto& coordinate : driver.second.Coordinate)
 						{
@@ -748,7 +744,7 @@ namespace Standard
 								}
 
 								// 変化あり
-								postscript << m_input.Drivers[driver.first].Position[coordinate.first] << " → ";
+								postscript << m_input.Drivers[driver.first].Coordinate[coordinate.first] << " → ";
 							}
 
 							// 新規or変化あり

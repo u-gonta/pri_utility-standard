@@ -76,6 +76,75 @@ namespace Standard
 			};
 
 			////////////////////////////////////////////////////////////////////////////////
+			/// @class      CSurveillance
+			/// @brief      軸を監視する設定クラス
+			////////////////////////////////////////////////////////////////////////////////
+			class CSurveillance
+			{
+			public:
+				////////////////////////////////////////////////////////////////////////////////
+				/// @enum			監視の種類
+				////////////////////////////////////////////////////////////////////////////////
+				enum EnumStatus
+				{
+					StatusFinish		// 終了を監視
+				};
+
+			public:
+				////////////////////////////////////////////////////////////////////////////////
+				/// @brief			コンストラクタ
+				////////////////////////////////////////////////////////////////////////////////
+				CSurveillance()
+				{
+					Status = StatusFinish;
+					Wakeup.reset();
+				}
+
+				////////////////////////////////////////////////////////////////////////////////
+				/// @brief			コピー代入演算子
+				/// @return			自クラス
+				////////////////////////////////////////////////////////////////////////////////
+				CSurveillance& operator = (const CSurveillance& object) noexcept
+				{
+					// 更新
+					Update(object);
+
+					return *this;
+				}
+
+				////////////////////////////////////////////////////////////////////////////////
+				/// @brief			デストラクタ
+				////////////////////////////////////////////////////////////////////////////////
+				~CSurveillance()
+				{
+
+				}
+
+			protected:
+				////////////////////////////////////////////////////////////////////////////////
+				/// @brief			自クラスを更新
+				/// @param[in]		object	自クラス
+				////////////////////////////////////////////////////////////////////////////////
+				void Update(const CSurveillance& object)
+				{
+					this->Status = object.Status;
+					this->Ids.clear();
+					std::copy(object.Ids.begin(), object.Ids.end(), std::back_inserter(this->Ids));
+					this->Wakeup = object.Wakeup;
+				}
+
+			public:
+				//! 監視の種類
+				EnumStatus Status;
+
+				//! 軸の識別子
+				std::vector<int> Ids;
+
+				//! 制御した結果の通知を呼び出す関数
+				std::weak_ptr<std::function<Execution::OnWakeup>> Wakeup;
+			};
+
+			////////////////////////////////////////////////////////////////////////////////
 			/// @class      CWorker
 			/// @brief      軸の制御、軸の監視、状態を通知するクラス
 			///				⇒ 軸の制御、軸の監視、状態を通知するテンプレートのクラスから継承
@@ -121,23 +190,47 @@ namespace Standard
 				// 軸を開放
 				void Clear();
 
-				// 軸を追加
-				void Addition(int id, const CStatus& status);
+				// 軸の状態を追加
+				void AdditionStatus(int id, const CStatus& object);
 
-				// 軸を取得
-				CStatus Get(int id);
+				// 軸の状態を取得
+				CStatus GetStatus(int id);
 
-				// 全軸を取得
-				std::map<int, CStatus> Get();
+				// 全軸の状態を取得
+				std::map<int, CStatus> GetStatus();
+
+				// 軸を監視する数を取得
+				size_t GetSurveillanceSize();
+
+				// 軸の監視を取得
+				CSurveillance GetSurveillance(size_t index);
+
+				// 軸の監視を追加
+				void AdditionSurveillance(const CSurveillance& object);
+
+				// 軸の監視を削除
+				void EraseSurveillance(const std::vector<size_t>& indexs);
+
+				// 入力レジスタの値を機器の状態を保持するクラスへ変換
+				Axis::Status::Input::CDriver ConvertInput(const Plc::Register::Result::CContent& object);
+
+				// 出力レジスタの値を機器の状態を保持するクラスへ変換
+				Axis::Status::Input::CDriver ConvertOutput(const Plc::Register::Result::CContent& object);
+
+				// 制御を停止
+				bool Suspend(const Execution::CSetting& object);
 
 				// サーボを制御
-				void Servo(const Surveillance::CSetting& object);
+				bool Servo(const Execution::CSetting& object);
 
-				// ジョグを実行
-				void StartJog(const Surveillance::CSetting& object);
+				// 原点復帰を実行
+				bool MoveOrigin(const Execution::CSetting& object);
+
+				// ジョグを開始
+				bool StartJog(const Execution::CSetting& object);
 
 				// ジョグを停止
-				void StopJog(const Surveillance::CSetting& object);
+				bool StopJog(const Execution::CSetting& object);
 
 			private:
 				//! 排他制御クラス(コントローラの情報クラス用)
@@ -156,7 +249,7 @@ namespace Standard
 				std::recursive_mutex m_asyncSurveillance;
 
 				//! 制御を監視する設定のクラス
-				std::vector<Surveillance::CSetting> m_surveillances;
+				std::vector<CSurveillance> m_surveillances;
 			};
 		}
 	}

@@ -95,7 +95,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Controller.h" />
+    <ClInclude Include="Execution.h" />
+    <ClInclude Include="ExecutionAxis.h" />
+    <ClInclude Include="ExecutionController.h" />
+    <ClInclude Include="ExecutionDevice.h" />
+    <ClInclude Include="ExecutionRegister.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Parameter.h" />
     <ClInclude Include="pch.h" />

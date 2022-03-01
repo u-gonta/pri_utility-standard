@@ -52,6 +52,9 @@ namespace Standard
 		// 軸のサーボを制御
 		MOTION_API void ServoControl(const Device::Setting::CServo& object);
 
+		// 軸の原点復帰を実行
+		MOTION_API void MoveOrigin(const Device::Setting::CMoveOrigin& object);
+
 		// 軸のジョグ送りを実行
 		MOTION_API void StartJog(const Device::Setting::CStartJog& object);
 

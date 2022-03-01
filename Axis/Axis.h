@@ -47,6 +47,9 @@ namespace Standard
 		// サーボを制御
 		AXIS_API void Servo(const Status::Output::CServo& object) throw(...);
 
+		// 原点復帰を実行
+		AXIS_API void MoveOrigin(const Status::Output::CMoveOrigin& object) throw(...);
+
 		// ジョグを開始
 		AXIS_API void StartJog(const Status::Output::CStartJog& object) throw(...);
 

@@ -15,6 +15,19 @@ namespace Standard
 			namespace Input
 			{
 				////////////////////////////////////////////////////////////////////////////////
+				/// @enum			動作
+				////////////////////////////////////////////////////////////////////////////////
+				enum EnumMotion
+				{
+					MotionAbnormal,					// 異常
+					MotionServo,					// サーボON
+					MotionOrigin,					// 原点復帰完了
+					MotionRunning,					// 実行中
+					MotionCompleted					// 実行完了
+				};
+				typedef Iterator::CWorker<EnumMotion, MotionServo, MotionCompleted> MotionIterator;
+
+				////////////////////////////////////////////////////////////////////////////////
 				/// @enum			座標
 				////////////////////////////////////////////////////////////////////////////////
 				enum EnumCoordinate
@@ -53,6 +66,18 @@ namespace Standard
 					}
 
 					////////////////////////////////////////////////////////////////////////////////
+					/// @brief			コピー代入演算子
+					/// @return			自クラス
+					////////////////////////////////////////////////////////////////////////////////
+					CDriver& operator += (const CDriver& object) noexcept
+					{
+						// 追加
+						Insert(object);
+
+						return *this;
+					}
+
+					////////////////////////////////////////////////////////////////////////////////
 					/// @brief			デストラクタ
 					////////////////////////////////////////////////////////////////////////////////
 					~CDriver()
@@ -68,20 +93,43 @@ namespace Standard
 					void Update(const CDriver& object)
 					{
 						this->Name = object.Name;
-						this->Running = object.Running;
+						this->Motion = object.Motion;
 						this->Warning = object.Warning;
 						this->Alarm = object.Alarm;
-						this->Valid = object.Valid;
-						this->Position = object.Position;
 						this->Coordinate = object.Coordinate;
+					}
+
+					////////////////////////////////////////////////////////////////////////////////
+					/// @brief			自クラスを追加
+					/// @param[in]		object	自クラス
+					////////////////////////////////////////////////////////////////////////////////
+					void Insert(const CDriver& object)
+					{
+						this->Name = object.Name;
+						for (const auto& motion : object.Motion)
+						{
+							this->Motion[motion.first] = motion.second;
+						}
+						for (const auto& warning : object.Warning)
+						{
+							this->Warning[warning.first] = warning.second;
+						}
+						for (const auto& alarm : object.Alarm)
+						{
+							this->Alarm[alarm.first] = alarm.second;
+						}
+						for (const auto& coordinate : object.Coordinate)
+						{
+							this->Coordinate[coordinate.first] = coordinate.second;
+						}
 					}
 
 				public:
 					//! 名称
 					std::string Name;
 
-					//! 運転ステータス
-					std::map<unsigned short, bool> Running;
+					//! 動作
+					std::map<unsigned short, bool> Motion;
 
 					//! ワーニング
 					std::map<unsigned short, bool> Warning;
@@ -89,14 +137,8 @@ namespace Standard
 					//! アラーム
 					std::map<unsigned short, bool> Alarm;
 
-					//! 有効
-					std::map<unsigned short, bool> Valid;
-
-					//! 位置
-					std::map<unsigned short, bool> Position;
-
 					//! 座標
-					std::map<unsigned short, double> Coordinate;
+					std::map<EnumCoordinate, double> Coordinate;
 				};
 			}
 
@@ -154,6 +196,7 @@ namespace Standard
 				////////////////////////////////////////////////////////////////////////////////
 				void Update(const CInput& object)
 				{
+					this->Drivers.clear();
 					this->Drivers = object.Drivers;
 				}
 
@@ -165,11 +208,7 @@ namespace Standard
 				{
 					for (const auto& driver : object.Drivers)
 					{
-						this->Drivers[driver.first].Running = driver.second.Running;
-						this->Drivers[driver.first].Warning = driver.second.Warning;
-						this->Drivers[driver.first].Alarm = driver.second.Alarm;
-						this->Drivers[driver.first].Valid = driver.second.Valid;
-						this->Drivers[driver.first].Position = driver.second.Position;
+						this->Drivers[driver.first] += driver.second;
 					}
 				}
 
@@ -235,8 +274,57 @@ namespace Standard
 				};
 
 				////////////////////////////////////////////////////////////////////////////////
+				/// @class      CSuspend
+				/// @brief      制御の停止を指定するクラス
+				///				⇒ 軸の状態(出力)を指定するテンプレートのクラスから派生
+				////////////////////////////////////////////////////////////////////////////////
+				class CSuspend
+					: virtual public CTemplate
+				{
+				public:
+					////////////////////////////////////////////////////////////////////////////////
+					/// @brief			コンストラクタ
+					////////////////////////////////////////////////////////////////////////////////
+					CSuspend() : CTemplate()
+					{
+
+					}
+
+					////////////////////////////////////////////////////////////////////////////////
+					/// @brief			コピー代入演算子
+					/// @return			自クラス
+					////////////////////////////////////////////////////////////////////////////////
+					CSuspend& operator = (const CSuspend& object) noexcept
+					{
+						// 更新
+						Update(object);
+
+						return *this;
+					}
+
+					////////////////////////////////////////////////////////////////////////////////
+					/// @brief			デストラクタ
+					////////////////////////////////////////////////////////////////////////////////
+					~CSuspend()
+					{
+
+					}
+
+				protected:
+					////////////////////////////////////////////////////////////////////////////////
+					/// @brief			自クラスを更新
+					/// @param[in]		object	自クラス
+					////////////////////////////////////////////////////////////////////////////////
+					void Update(const CSuspend& object)
+					{
+						// 既定の関数
+						CTemplate::Update(object);
+					}
+				};
+
+				////////////////////////////////////////////////////////////////////////////////
 				/// @class      CServo
-				/// @brief      軸のサーボ状態(出力)を指定するクラス
+				/// @brief      サーボの状態を指定するクラス
 				///				⇒ 軸の状態(出力)を指定するテンプレートのクラスから派生
 				////////////////////////////////////////////////////////////////////////////////
 				class CServo
@@ -290,8 +378,57 @@ namespace Standard
 				};
 
 				////////////////////////////////////////////////////////////////////////////////
+				/// @class      CMoveOrigin
+				/// @brief      原点復帰の実行を指定するクラス
+				///				⇒ 軸の状態(出力)を指定するテンプレートのクラスから派生
+				////////////////////////////////////////////////////////////////////////////////
+				class CMoveOrigin
+					: virtual public CTemplate
+				{
+				public:
+					////////////////////////////////////////////////////////////////////////////////
+					/// @brief			コンストラクタ
+					////////////////////////////////////////////////////////////////////////////////
+					CMoveOrigin() : CTemplate()
+					{
+
+					}
+
+					////////////////////////////////////////////////////////////////////////////////
+					/// @brief			コピー代入演算子
+					/// @return			自クラス
+					////////////////////////////////////////////////////////////////////////////////
+					CMoveOrigin& operator = (const CMoveOrigin& object) noexcept
+					{
+						// 更新
+						Update(object);
+
+						return *this;
+					}
+
+					////////////////////////////////////////////////////////////////////////////////
+					/// @brief			デストラクタ
+					////////////////////////////////////////////////////////////////////////////////
+					~CMoveOrigin()
+					{
+
+					}
+
+				protected:
+					////////////////////////////////////////////////////////////////////////////////
+					/// @brief			自クラスを更新
+					/// @param[in]		object	自クラス
+					////////////////////////////////////////////////////////////////////////////////
+					void Update(const CMoveOrigin& object)
+					{
+						// 既定の関数
+						CTemplate::Update(object);
+					}
+				};
+
+				////////////////////////////////////////////////////////////////////////////////
 				/// @class      CStartJog
-				/// @brief      軸のジョグ実行を指定するクラス
+				/// @brief      ジョグの開始を指定するクラス
 				///				⇒ 軸の状態(出力)を指定するテンプレートのクラスから派生
 				////////////////////////////////////////////////////////////////////////////////
 				class CStartJog
@@ -340,7 +477,7 @@ namespace Standard
 
 				////////////////////////////////////////////////////////////////////////////////
 				/// @class      CStopJog
-				/// @brief      軸のジョグ停止を指定するクラス
+				/// @brief      ジョグの停止を指定するクラス
 				///				⇒ 軸の状態(出力)を指定するテンプレートのクラスから派生
 				////////////////////////////////////////////////////////////////////////////////
 				class CStopJog
